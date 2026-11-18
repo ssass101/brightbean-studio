@@ -12,18 +12,48 @@
    To rebrand: change ONLY the brand token values below.
    ═══════════════════════════════════════════════════════════════ */
 
+/* Fuentes propias (self-hosted) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../../fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('../../fonts/plus-jakarta-sans-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+/* Tailwind: la paleta naranja apunta a la marca Canvas */
+@theme {
+  --color-orange-50:  #F0F4FC;
+  --color-orange-100: #E1E8F8;
+  --color-orange-200: #C3D0F0;
+  --color-orange-300: #93A8DE;
+  --color-orange-400: #5B7AC9;
+  --color-orange-500: #1A3A8F;
+  --color-orange-600: #153077;
+  --color-orange-700: #112761;
+  --color-orange-800: #0D1F4C;
+  --color-orange-900: #0A1738;
+}
+
 :root {
-  /* Brand Tokens - BrightBean Orange */
-  --brand-50:  #FFF7ED;
-  --brand-100: #FFEDD5;
-  --brand-200: #FED7AA;
-  --brand-300: #FDBA74;
-  --brand-400: #FB923C;
-  --brand-500: #F97316;
-  --brand-600: #EA580C;
-  --brand-700: #C2410C;
-  --brand-800: #9A3412;
-  --brand-900: #7C2D12;
+  /* Brand Tokens - Canvas Blue */
+  --brand-50:  #F0F4FC;
+  --brand-100: #E1E8F8;
+  --brand-200: #C3D0F0;
+  --brand-300: #93A8DE;
+  --brand-400: #5B7AC9;
+  --brand-500: #1A3A8F;
+  --brand-600: #153077;
+  --brand-700: #112761;
+  --brand-800: #0D1F4C;
+  --brand-900: #0A1738;
 
   /* Brand Tokens - BrightBean Green (the bean in the logo) — used for
      selection controls (checkboxes, toggle switches) */
@@ -32,8 +62,8 @@
   --brand-green-500: #94A43F;
   --brand-green-600: #7B8A33;
 
-  --brand-font-display: Georgia, 'Times New Roman', serif;
-  --brand-font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --brand-font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --brand-font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --brand-font-mono: ui-monospace, SFMono-Regular, 'Cascadia Code', 'Consolas', monospace;
 
   /* Semantic Tokens */
@@ -99,7 +129,7 @@
   --shadow-md:  0 4px 6px rgba(23,20,18,0.06), 0 2px 4px rgba(23,20,18,0.04);
   --shadow-lg:  0 10px 15px rgba(23,20,18,0.08), 0 4px 6px rgba(23,20,18,0.04);
   --shadow-xl:  0 20px 25px rgba(23,20,18,0.08), 0 8px 10px rgba(23,20,18,0.04);
-  --shadow-primary: 0 4px 14px rgba(249,115,22,0.28);
+  --shadow-primary: 0 4px 14px rgba(26,58,143,0.28);
 
   /* Radii */
   --radius-sm:   0.25rem;
@@ -132,7 +162,7 @@ body {
 .auth-bg {
   background-color: var(--surface-1);
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(249,115,22,0.08), transparent),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(26,58,143,0.08), transparent),
     radial-gradient(ellipse 60% 40% at 100% 100%, rgba(20,184,166,0.04), transparent);
 }
 
@@ -272,7 +302,7 @@ img.sidebar-logo-mark {
 .btn-primary-lift:hover {
   background: var(--primary-hover) !important;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(249,115,22,0.35);
+  box-shadow: 0 6px 20px rgba(26,58,143,0.35);
 }
 
 .card-hover-lift {
@@ -342,7 +372,7 @@ img.sidebar-logo-mark {
   transition: background var(--dur-fast) ease;
 }
 .btn-primary-tint:hover {
-  background: rgba(var(--primary-rgb, 249, 115, 22), 0.2) !important;
+  background: rgba(var(--primary-rgb, 26, 58, 143), 0.2) !important;
 }
 
 .input-focus {
@@ -424,7 +454,7 @@ img.sidebar-logo-mark {
 .btn-brand:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(249,115,22,0.35);
+  box-shadow: 0 6px 20px rgba(26,58,143,0.35);
 }
 .btn-brand:active {
   transform: translateY(0);

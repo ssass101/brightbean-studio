@@ -10,15 +10,15 @@ register = template.Library()
 # identical badge from one source.
 STATUS_META = {
     "draft": {"label": "Draft", "dot": "#A8A29E", "bg": "#F5F5F4", "fg": "#57534E", "bd": "#E7E5E4"},
-    "pending_review": {"label": "Pending Review", "dot": "#F97316", "bg": "#FFF7ED", "fg": "#C2410C", "bd": "#FED7AA"},
-    "pending_client": {"label": "Pending Client", "dot": "#F97316", "bg": "#FFF7ED", "fg": "#C2410C", "bd": "#FED7AA"},
+    "pending_review": {"label": "Pending Review", "dot": "#1a3a8f", "bg": "#f0f4fc", "fg": "#112761", "bd": "#c3d0f0"},
+    "pending_client": {"label": "Pending Client", "dot": "#1a3a8f", "bg": "#f0f4fc", "fg": "#112761", "bd": "#c3d0f0"},
     "approved": {"label": "Approved", "dot": "#14B8A6", "bg": "#F0FDFA", "fg": "#0F766E", "bd": "#99F6E4"},
     "changes_requested": {
         "label": "Changes Requested",
-        "dot": "#F97316",
-        "bg": "#FFF7ED",
-        "fg": "#C2410C",
-        "bd": "#FED7AA",
+        "dot": "#1a3a8f",
+        "bg": "#f0f4fc",
+        "fg": "#112761",
+        "bd": "#c3d0f0",
     },
     "rejected": {"label": "Rejected", "dot": "#EF4444", "bg": "#FEF2F2", "fg": "#B91C1C", "bd": "#FECACA"},
     "scheduled": {"label": "Scheduled", "dot": "#3B82F6", "bg": "#EFF6FF", "fg": "#1D4ED8", "bd": "#BFDBFE"},

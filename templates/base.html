@@ -123,7 +123,7 @@
             cursor: pointer;
             transition: border-color 150ms, background 150ms;
         }
-        .idea-media-zone.drag-over { border-color: var(--primary); background: rgba(var(--primary-rgb, 249, 115, 22), 0.05); }
+        .idea-media-zone.drag-over { border-color: var(--primary); background: rgba(var(--primary-rgb, 26, 58, 143), 0.05); }
         .idea-media-strip-layout {
             margin-top: 16px;
             display: flex;
@@ -182,7 +182,7 @@
         .idea-selected-tags .idea-tag-chip {
             display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 9999px;
             font-size: 0.6875rem; font-weight: 600;
-            background: var(--primary-soft, #FFF7ED); color: var(--primary, #C2410C); border: 1px solid var(--primary-muted, #FED7AA);
+            background: var(--primary-soft, #f0f4fc); color: var(--primary, #112761); border: 1px solid var(--primary-muted, #c3d0f0);
         }
         .idea-selected-tags .idea-tag-chip button {
             display: flex; align-items: center; justify-content: center;
@@ -1004,7 +1004,7 @@
                 data = JSON.parse(canvas.dataset.series || '[]');
                 labels = JSON.parse(canvas.dataset.labels || '[]');
             } catch (e) { return; }
-            var color = '#F97316';
+            var color = '#1a3a8f';
             if (window._bbHeroChart) { window._bbHeroChart.destroy(); }
             var ctx = canvas.getContext('2d');
             var gradient = ctx.createLinearGradient(0, 0, 0, 260);
