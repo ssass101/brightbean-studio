@@ -13,6 +13,7 @@ from django.utils import timezone as django_tz
 from django.views.decorators.http import require_http_methods
 
 from apps.accounts.signup_links import custom_signup_url, signup_allowed
+from apps.calendar.views import _es_day_month, _es_weekday_day_month_year, _ES_MONTHS
 from apps.common.validators import clean_display_name
 from apps.composer.models import PlatformPost, Post, Tag
 from apps.members.decorators import require_org_role
@@ -313,7 +314,7 @@ def cross_workspace_calendar(request):
             "workspace_colors": workspace_colors,
             "target_date": target_date,
             "default_workspace": workspaces.first(),
-            "day_names": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "day_names": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
             "settings_active": "calendars",
             "view_type": view_type,
             "social_accounts": social_accounts,
@@ -364,7 +365,7 @@ def _build_month_context(base_pps, target_date, today):
 
     return {
         "calendar_weeks": calendar_weeks,
-        "period_label": date(year, month, 1).strftime("%B %Y"),
+        "period_label": f"{_ES_MONTHS[month]} {year}",
         "prev_date": prev_month.isoformat(),
         "next_date": next_month.isoformat(),
     }
@@ -403,7 +404,7 @@ def _build_week_context(base_pps, target_date, today):
         "week_slots": week_slots,
         "today": today,
         "current_hour": _tz.now().hour,
-        "period_label": f"{week_days[0].strftime('%b %d')} – {week_days[6].strftime('%b %d, %Y')}",
+        "period_label": f"{_es_day_month(week_days[0])} – {_es_day_month(week_days[6])}, {week_days[6].year}",
         "prev_date": (monday - timedelta(weeks=1)).isoformat(),
         "next_date": (monday + timedelta(weeks=1)).isoformat(),
     }
@@ -430,7 +431,7 @@ def _build_day_context(base_pps, target_date, today):
         "is_today": target_date == today,
         "is_past_day": target_date < today,
         "current_hour": now.hour,
-        "period_label": target_date.strftime("%A, %B %d, %Y"),
+        "period_label": _es_weekday_day_month_year(target_date),
         "prev_date": (target_date - timedelta(days=1)).isoformat(),
         "next_date": (target_date + timedelta(days=1)).isoformat(),
     }

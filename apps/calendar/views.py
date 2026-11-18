@@ -53,6 +53,51 @@ COMMON_TIMEZONES = [
 # publisher, it is gated on ``publish_directly`` — see ``reschedule_post``.
 _IMPLICIT_SCHEDULE_STATUSES = ("draft", "failed")
 
+# Spanish month/weekday names for the calendar's period labels. ``strftime``'s
+# "%B"/"%A" depend on the OS locale, which isn't reliably set to Spanish in
+# this deployment, so the period labels are built from these instead.
+_ES_MONTHS = [
+    "",
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+]
+_ES_MONTHS_SHORT = [
+    "",
+    "ene",
+    "feb",
+    "mar",
+    "abr",
+    "may",
+    "jun",
+    "jul",
+    "ago",
+    "sep",
+    "oct",
+    "nov",
+    "dic",
+]
+_ES_WEEKDAYS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+
+
+def _es_day_month(d):
+    """Return a date as '18 nov' in Spanish, independent of OS locale."""
+    return f"{d.day} {_ES_MONTHS_SHORT[d.month]}"
+
+
+def _es_weekday_day_month_year(d):
+    """Return a date as 'miércoles, 18 de noviembre de 2026' in Spanish."""
+    return f"{_ES_WEEKDAYS[d.weekday()]}, {d.day} de {_ES_MONTHS[d.month]} de {d.year}"
+
 
 def _slots_updated_response(account_id):
     """Return a 204 response with an HX-Trigger header for slot grid refresh."""
@@ -872,11 +917,11 @@ def _month_view_data(request, workspace, target_date, context):
     context.update(
         {
             "calendar_weeks": calendar_weeks,
-            "period_label": date(year, month, 1).strftime("%B %Y"),
+            "period_label": f"{_ES_MONTHS[month]} {year}",
             "prev_date": prev_month.isoformat(),
             "next_date": next_month.isoformat(),
             "unscheduled_drafts": drafts,
-            "day_names": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "day_names": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
         }
     )
 
@@ -955,7 +1000,7 @@ def _week_view_data(request, workspace, target_date, context):
             "current_hour": now.hour,
             "prev_date": (monday - timedelta(weeks=1)).isoformat(),
             "next_date": (monday + timedelta(weeks=1)).isoformat(),
-            "period_label": f"{week_days[0].strftime('%b %d')} – {week_days[6].strftime('%b %d, %Y')}",
+            "period_label": f"{_es_day_month(week_days[0])} – {_es_day_month(week_days[6])}, {week_days[6].year}",
         }
     )
 
@@ -1024,7 +1069,7 @@ def _day_view_data(request, workspace, target_date, context):
             "current_hour": now.hour,
             "prev_date": (target_date - timedelta(days=1)).isoformat(),
             "next_date": (target_date + timedelta(days=1)).isoformat(),
-            "period_label": target_date.strftime("%A, %B %d, %Y"),
+            "period_label": _es_weekday_day_month_year(target_date),
         }
     )
 
@@ -1048,7 +1093,7 @@ def _list_view(request, workspace, target_date, context):
     context.update(
         {
             "posts": posts,
-            "period_label": "All Posts",
+            "period_label": "Todas las publicaciones",
             "prev_date": target_date.isoformat(),
             "next_date": target_date.isoformat(),
             "has_connected_accounts": has_connected_accounts,
