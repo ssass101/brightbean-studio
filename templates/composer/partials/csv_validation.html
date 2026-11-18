@@ -3,7 +3,7 @@
     <div class="bg-white rounded-xl border border-stone-200 p-6">
         <div class="flex items-center gap-3 mb-4">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background: var(--primary);">3</div>
-            <h2 class="text-sm font-semibold text-stone-800">Validation Results</h2>
+            <h2 class="text-sm font-semibold text-stone-800">Resultados de la validación</h2>
         </div>
 
         <!-- Summary -->
@@ -36,7 +36,7 @@
             {% endfor %}
         </div>
         {% if has_more_errors %}
-        <p class="text-xs text-stone-500 mb-4">Showing first 50 errors. Fix and re-upload for the full list.</p>
+        <p class="text-xs text-stone-500 mb-4">Se muestran los primeros 50 errores. Corrige y vuelve a subir para ver la lista completa.</p>
         {% endif %}
         {% endif %}
 
@@ -54,14 +54,14 @@
                     {% endif %}
                 </div>
                 <button type="submit" class="btn-brand text-sm py-2 px-5">
-                    Confirm Import
+                    Confirmar importación
                 </button>
             </div>
         </form>
         {% else %}
         <div class="p-4 bg-red-50 rounded-lg text-center">
-            <p class="text-sm font-medium text-red-800">No valid rows to import.</p>
-            <p class="text-xs text-red-600 mt-1">Fix the errors in your CSV and re-upload.</p>
+            <p class="text-sm font-medium text-red-800">No hay filas válidas para importar.</p>
+            <p class="text-xs text-red-600 mt-1">Corrige los errores de tu CSV y vuelve a subirlo.</p>
         </div>
         {% endif %}
     </div>

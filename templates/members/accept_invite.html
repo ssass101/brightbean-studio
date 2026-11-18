@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,14 +92,14 @@
 
         <!-- Details -->
         <div class="info-box">
-            <div class="info-label">Organization</div>
+            <div class="info-label">Organización</div>
             <div class="info-value" style="margin-bottom: 12px;">{{ invitation.organization.name }}</div>
 
-            <div class="info-label">Role</div>
+            <div class="info-label">Rol</div>
             <div class="info-value" style="margin-bottom: 12px; text-transform: capitalize;">{{ invitation.org_role }}</div>
 
             {% if ws_display %}
-            <div class="info-label">Workspaces</div>
+            <div class="info-label">Espacios de trabajo</div>
             <ul class="workspace-list">
                 {% for ws in ws_display %}
                 <li>
@@ -122,11 +122,11 @@
         {% else %}
         <!-- Not logged in: signup or login -->
         <a href="/accounts/signup/?next={{ accept_url }}" class="btn btn-primary">
-            Sign Up to Join
+            Regístrate para unirte
         </a>
-        <div class="or-divider">or</div>
+        <div class="or-divider">o</div>
         <a href="/accounts/login/?next={{ accept_url }}" class="btn btn-secondary">
-            Log In to Join
+            Inicia sesión para unirte
         </a>
         {% endif %}
     </div>

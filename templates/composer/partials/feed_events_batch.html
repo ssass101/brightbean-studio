@@ -30,7 +30,7 @@
             {{ event.summary|truncatechars:220 }}
             {% if event_url != '#' %}
             <a href="{{ event_url }}" target="_blank" rel="noopener noreferrer" class="text-stone-700 hover:text-stone-900">
-                View Entire Post
+                Ver publicación completa
             </a>
             {% endif %}
         </p>
@@ -48,7 +48,7 @@
 {% endfor %}
 {% elif show_empty %}
 <div class="py-10 text-center text-stone-500">
-    No events found for this feed filter.
+    No se encontraron eventos para este filtro de feed.
 </div>
 {% endif %}
 

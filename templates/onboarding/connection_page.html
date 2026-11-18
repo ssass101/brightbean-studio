@@ -27,12 +27,12 @@
             letter-spacing: -0.02em;
             line-height: 1.2;
             margin-bottom: 8px;
-        ">Connect your social accounts</h1>
+        ">Conecta tus cuentas sociales</h1>
         <p style="
             font-size: 0.9375rem;
             color: var(--text-secondary);
             line-height: 1.6;
-        ">to <strong style="color: var(--text-primary); font-weight: 600;">{{ workspace.name }}</strong> on {{ org.name }}</p>
+        ">a <strong style="color: var(--text-primary); font-weight: 600;">{{ workspace.name }}</strong> on {{ org.name }}</p>
     </div>
 
     <!-- Error message -->
@@ -118,7 +118,7 @@
             {% if value in connected_accounts %}
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 0.8125rem; font-weight: 500; color: var(--success-700);">
-                    Connected
+                    Conectada
                 </span>
                 <div style="
                     width: 28px; height: 28px;
@@ -147,7 +147,7 @@
                     box-shadow: var(--shadow-primary);
                     transition: all 200ms ease;
                 ">
-                    Connect
+                    Conectar
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </button>
                 <div x-show="showForm" x-cloak style="
@@ -163,9 +163,9 @@
                         box-shadow: var(--shadow-xl);
                     ">
                         {% csrf_token %}
-                        <h3 style="font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">Connect Bluesky</h3>
+                        <h3 style="font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">Conectar Bluesky</h3>
                         <div style="margin-bottom: 12px;">
-                            <label style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 4px;">Handle</label>
+                            <label style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 4px;">Usuario</label>
                             <input type="text" name="handle" placeholder="you.bsky.social" required style="
                                 width: 100%; padding: 9px 12px;
                                 font-size: 0.875rem; font-family: var(--font-body);
@@ -177,7 +177,7 @@
                             ">
                         </div>
                         <div style="margin-bottom: 16px;">
-                            <label style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 4px;">App Password</label>
+                            <label style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 4px;">Contraseña de aplicación</label>
                             <input type="password" name="app_password" required style="
                                 width: 100%; padding: 9px 12px;
                                 font-size: 0.875rem; font-family: var(--font-body);
@@ -187,7 +187,7 @@
                                 color: var(--text-primary);
                                 outline: none;
                             ">
-                            <p style="font-size: 0.6875rem; color: var(--text-tertiary); margin-top: 4px;">Generate at Settings &rarr; App Passwords on Bluesky</p>
+                            <p style="font-size: 0.6875rem; color: var(--text-tertiary); margin-top: 4px;">Generala en Configuración &rarr; Contraseñas de aplicación en Bluesky</p>
                         </div>
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
                             <button type="button" @click="showForm = false" style="
@@ -195,13 +195,13 @@
                                 background: var(--surface-0); color: var(--text-primary);
                                 border: 1px solid var(--border); border-radius: var(--radius-full);
                                 cursor: pointer;
-                            ">Cancel</button>
+                            ">Cancelar</button>
                             <button type="submit" style="
                                 padding: 8px 16px; font-size: 0.8125rem; font-weight: 600;
                                 background: var(--primary); color: white;
                                 border: none; border-radius: var(--radius-full);
                                 cursor: pointer; box-shadow: var(--shadow-primary);
-                            ">Connect</button>
+                            ">Conectar</button>
                         </div>
                     </form>
                 </div>
@@ -221,7 +221,7 @@
                     box-shadow: var(--shadow-primary);
                     transition: all 200ms ease;
                 ">
-                    Connect
+                    Conectar
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </button>
                 <div x-show="showForm" x-cloak style="
@@ -237,9 +237,9 @@
                         box-shadow: var(--shadow-xl);
                     ">
                         {% csrf_token %}
-                        <h3 style="font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">Connect Mastodon</h3>
+                        <h3 style="font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">Conectar Mastodon</h3>
                         <div style="margin-bottom: 16px;">
-                            <label style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 4px;">Instance URL</label>
+                            <label style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 4px;">URL de la instancia</label>
                             <input type="text" name="instance_url" placeholder="mastodon.social" required style="
                                 width: 100%; padding: 9px 12px;
                                 font-size: 0.875rem; font-family: var(--font-body);
@@ -256,13 +256,13 @@
                                 background: var(--surface-0); color: var(--text-primary);
                                 border: 1px solid var(--border); border-radius: var(--radius-full);
                                 cursor: pointer;
-                            ">Cancel</button>
+                            ">Cancelar</button>
                             <button type="submit" style="
                                 padding: 8px 16px; font-size: 0.8125rem; font-weight: 600;
                                 background: var(--primary); color: white;
                                 border: none; border-radius: var(--radius-full);
                                 cursor: pointer; box-shadow: var(--shadow-primary);
-                            ">Connect</button>
+                            ">Conectar</button>
                         </div>
                     </form>
                 </div>
@@ -284,7 +284,7 @@
                     box-shadow: var(--shadow-primary);
                     transition: all 200ms ease;
                 ">
-                    Connect
+                    Conectar
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </button>
             </form>
@@ -334,7 +334,7 @@
     <!-- Footer help -->
     <div style="text-align: center; margin-top: 28px;">
         <p style="font-size: 0.75rem; color: var(--text-ghost); line-height: 1.6;">
-            Need help? Contact <strong style="color: var(--text-tertiary);">{{ org.name }}</strong>
+            ¿Necesitas ayuda? Contacta a <strong style="color: var(--text-tertiary);">{{ org.name }}</strong>
         </p>
         <p style="font-size: 0.6875rem; color: var(--text-ghost); margin-top: 4px;">
             This link expires {{ link.expires_at|date:"M j, Y" }}
