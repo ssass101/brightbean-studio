@@ -12,24 +12,24 @@ class InboxMessage(models.Model):
     api_refreshed_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     class MessageType(models.TextChoices):
-        COMMENT = "comment", "Comment"
-        MENTION = "mention", "Mention"
-        DM = "dm", "Direct Message"
-        REVIEW = "review", "Review"
+        COMMENT = "comment", "Comentario"
+        MENTION = "mention", "Mención"
+        DM = "dm", "Mensaje directo"
+        REVIEW = "review", "Reseña"
 
     class Status(models.TextChoices):
-        UNREAD = "unread", "Unread"
-        OPEN = "open", "Open"
-        RESOLVED = "resolved", "Resolved"
-        ARCHIVED = "archived", "Archived"
+        UNREAD = "unread", "No leído"
+        OPEN = "open", "Abierto"
+        RESOLVED = "resolved", "Resuelto"
+        ARCHIVED = "archived", "Archivado"
 
     class Sentiment(models.TextChoices):
-        POSITIVE = "positive", "Positive"
+        POSITIVE = "positive", "Positivo"
         NEUTRAL = "neutral", "Neutral"
-        NEGATIVE = "negative", "Negative"
+        NEGATIVE = "negative", "Negativo"
 
     class SentimentSource(models.TextChoices):
-        AUTO = "auto", "Auto"
+        AUTO = "auto", "Automático"
         MANUAL = "manual", "Manual"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -134,9 +134,9 @@ class InboxMessage(models.Model):
 
 class InboxReply(models.Model):
     class Status(models.TextChoices):
-        DRAFT = "draft", "Draft"
-        SENT = "sent", "Sent"
-        FAILED = "failed", "Failed"
+        DRAFT = "draft", "Borrador"
+        SENT = "sent", "Enviada"
+        FAILED = "failed", "Fallida"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     inbox_message = models.ForeignKey(
