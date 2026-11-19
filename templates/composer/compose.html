@@ -2299,6 +2299,13 @@ function composerApp() {
                 this.hasSingleMediaAttached = thumbs.length === 1;
             };
             this.$nextTick(syncVideoAttached);
+            // Watch the list itself too: HX-Trigger events can fire before htmx
+            // swaps the new thumbnail in, which left the single-media state
+            // stale (e.g. the Story / format options never appearing).
+            const mediaListEl = document.getElementById('media-list');
+            if (mediaListEl && window.MutationObserver) {
+                new MutationObserver(() => syncVideoAttached()).observe(mediaListEl, { childList: true, subtree: true });
+            }
             document.body.addEventListener('previewUpdate', syncVideoAttached);
             document.body.addEventListener('htmx:afterSwap', (e) => {
                 if (e.target && e.target.id === 'media-list') syncVideoAttached();
