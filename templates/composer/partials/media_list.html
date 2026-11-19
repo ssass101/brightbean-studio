@@ -4,7 +4,7 @@ Context: media_attachments, post, workspace.
 {% endcomment %}
 
 {% for attachment in media_attachments %}
-<div class="media-thumb" draggable="true">
+<div class="media-thumb" draggable="true" data-attachment-id="{{ attachment.id }}"{% if post %} data-reorder-url="{% url 'composer:reorder_media' workspace_id=workspace.id post_id=post.id %}"{% endif %}>
     {% if attachment.media_asset.is_video %}
     <video src="{{ attachment.media_asset.file.url }}#t=0.5" data-asset-id="{{ attachment.media_asset.id }}" class="w-full h-full object-cover" muted preload="metadata"></video>
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -22,6 +22,12 @@ Context: media_attachments, post, workspace.
     </div>
     {% endif %}
     {% if post %}
+    <button type="button" class="move-btn move-prev" title="Mover antes" onclick="moveMediaThumb(this, -1)">
+        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <button type="button" class="move-btn move-next" title="Mover después" onclick="moveMediaThumb(this, 1)">
+        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+    </button>
     <button type="button" class="remove-btn"
             hx-post="{% url 'composer:remove_media' workspace_id=workspace.id post_id=post.id media_id=attachment.id %}"
             hx-target="#media-list"

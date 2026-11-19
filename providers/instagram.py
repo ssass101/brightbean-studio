@@ -336,7 +336,36 @@ class InstagramProvider(SocialProvider):
         # parent container, so publish it as an ordinary single post instead.
         if content.post_type == PostType.CAROUSEL and len(content.media_urls) > 1:
             return self._publish_carousel(access_token, ig_user_id, content)
+        if content.post_type == PostType.STORY and len(content.media_urls) > 1:
+            return self._publish_stories(access_token, ig_user_id, content)
         return self._publish_single(access_token, ig_user_id, content)
+
+    def _publish_stories(self, access_token: str, ig_user_id: str, content: PublishContent) -> PublishResult:
+        """Publish each attachment as its own Story, in order.
+
+        A retry after a mid-way failure must not republish the Stories that
+        already went out, so each published id is remembered per attempt key.
+        """
+        cache = content.upload_cache
+        story_ids: list[str] = []
+        for index, url in enumerate(content.media_urls):
+            cache_key = f"ig-story:{content.idempotency_key}:{index}" if content.idempotency_key else None
+            done = cache.get(cache_key) if (cache and cache_key) else None
+            if done:
+                story_ids.append(done)
+                continue
+            payload = {"media_type": "STORIES", ("video_url" if content.is_video(index) else "image_url"): url}
+            container_id = self._create_container(access_token, ig_user_id, payload)
+            self._wait_for_container(access_token, container_id)
+            result = self._publish_container(access_token, ig_user_id, container_id)
+            story_ids.append(result.platform_post_id)
+            if cache and cache_key:
+                cache.set(cache_key, result.platform_post_id, 86400)
+        return PublishResult(
+            platform_post_id=story_ids[0],
+            url=f"https://www.instagram.com/p/{story_ids[0]}/",
+            extra={"story_ids": story_ids},
+        )
 
     def _publish_single(self, access_token: str, ig_user_id: str, content: PublishContent) -> PublishResult:
         """Publish a single image, reel, or story."""

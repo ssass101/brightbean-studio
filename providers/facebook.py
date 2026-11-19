@@ -312,7 +312,7 @@ class FacebookProvider(SocialProvider):
 
         if content.post_type == PostType.IMAGE and content.media_urls:
             return self._publish_photo(access_token, page_id, content)
-        if content.post_type == PostType.STORY and len(content.media_urls) == 1:
+        if content.post_type == PostType.STORY and content.media_urls:
             return self._publish_story(access_token, page_id, content)
         if content.post_type == PostType.REEL:
             return self._publish_reel(access_token, page_id, content)
@@ -602,15 +602,36 @@ class FacebookProvider(SocialProvider):
         )
 
     def _publish_story(self, access_token: str, page_id: str, content: PublishContent) -> PublishResult:
-        """Publish a Page Story (one photo or one video).
+        """Publish each attachment as its own Page Story, in order.
+
+        A retry after a mid-way failure skips the Stories already published.
+        """
+        cache = content.upload_cache
+        results: list[PublishResult] = []
+        for index, url in enumerate(content.media_urls):
+            cache_key = f"fb-story:{content.idempotency_key}:{index}" if content.idempotency_key else None
+            done = cache.get(cache_key) if (cache and cache_key) else None
+            if done:
+                results.append(PublishResult(platform_post_id=done, url=f"https://www.facebook.com/{done}"))
+                continue
+            result = self._publish_one_story(access_token, page_id, url, content.is_video(index))
+            results.append(result)
+            if cache and cache_key:
+                cache.set(cache_key, result.platform_post_id, 86400)
+        first = results[0]
+        extra = dict(first.extra or {})
+        if len(results) > 1:
+            extra["story_ids"] = [r.platform_post_id for r in results]
+        return PublishResult(platform_post_id=first.platform_post_id, url=first.url, extra=extra)
+
+    def _publish_one_story(self, access_token: str, page_id: str, url: str, is_video: bool) -> PublishResult:
+        """Publish one photo or one video as a Page Story.
 
         Photo: stage an unpublished photo, then publish it to /photo_stories.
         Video: the same start/upload/finish protocol as Reels, on /video_stories.
         Stories take no caption, so none is sent.
         """
-        url = content.media_urls[0]
-
-        if not content.is_video(0):
+        if not is_video:
             staged = self._request(
                 "POST",
                 f"{BASE_URL}/{page_id}/photos",

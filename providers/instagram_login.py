@@ -317,7 +317,34 @@ class InstagramLoginProvider(SocialProvider):
 
         if content.post_type == PostType.CAROUSEL and len(content.media_urls) > 1:
             return self._publish_carousel(access_token, content)
+        if content.post_type == PostType.STORY and len(content.media_urls) > 1:
+            return self._publish_stories(access_token, content)
         return self._publish_single(access_token, content)
+
+    def _publish_stories(self, access_token: str, content: PublishContent) -> PublishResult:
+        """Publish each attachment as its own Story, in order (retry-safe)."""
+        cache = content.upload_cache
+        story_ids: list[str] = []
+        first_result = None
+        for index, url in enumerate(content.media_urls):
+            cache_key = f"igl-story:{content.idempotency_key}:{index}" if content.idempotency_key else None
+            done = cache.get(cache_key) if (cache and cache_key) else None
+            if done:
+                story_ids.append(done)
+                continue
+            payload = {"media_type": "STORIES", ("video_url" if content.is_video(index) else "image_url"): url}
+            container_id = self._create_container(access_token, payload)
+            self._wait_for_container(access_token, container_id)
+            result = self._publish_container(access_token, container_id)
+            first_result = first_result or result
+            story_ids.append(result.platform_post_id)
+            if cache and cache_key:
+                cache.set(cache_key, result.platform_post_id, 86400)
+        return PublishResult(
+            platform_post_id=story_ids[0],
+            url=(first_result.url if first_result else None),
+            extra={"story_ids": story_ids},
+        )
 
     def _publish_single(self, access_token: str, content: PublishContent) -> PublishResult:
         payload: dict = {}

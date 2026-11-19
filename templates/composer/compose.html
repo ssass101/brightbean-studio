@@ -200,6 +200,23 @@
         z-index: 2;
     }
     .media-thumb .remove-btn:hover { background: #EF4444; }
+    .media-thumb .move-btn {
+        position: absolute; bottom: 4px; width: 18px; height: 18px; border-radius: 9999px;
+        background: rgba(0,0,0,0.55); color: #fff; display: none; align-items: center; justify-content: center;
+        cursor: pointer; border: 0; padding: 0; z-index: 2;
+    }
+    .media-thumb .move-btn:hover { background: #F97316; }
+    .media-thumb .move-prev { left: 4px; }
+    .media-thumb .move-next { right: 4px; }
+    .media-thumb.has-siblings:hover .move-btn { display: flex; }
+    .media-thumb.is-first .move-prev, .media-thumb.is-last .move-next { display: none !important; }
+    .media-thumb.has-siblings::before {
+        content: attr(data-pos); position: absolute; top: 4px; left: 4px; min-width: 16px; height: 16px;
+        padding: 0 4px; border-radius: 9999px; background: rgba(0,0,0,0.6); color: #fff; font-size: 10px;
+        font-weight: 600; display: flex; align-items: center; justify-content: center; z-index: 2; pointer-events: none;
+    }
+    .media-thumb.sortable-ghost { opacity: 0.4; }
+    #media-list[data-readonly] .move-btn, #media-list[data-readonly] .media-thumb::before { display: none !important; }
 
     /* Upload progress overlay */
     .media-thumb .upload-overlay {
@@ -539,7 +556,7 @@
                             </button>
                             {% endif %}
                             <!-- display:contents keeps appended thumbs flowing in this row -->
-                            <div id="media-list" class="contents">
+                            <div id="media-list" class="contents"{% if post_is_readonly %} data-readonly="1"{% endif %}>
                                 {% if post %}
                                     {% include "composer/partials/media_list.html" %}
                                 {% elif pending_assets %}
@@ -564,14 +581,14 @@
                 </div>
 
                 <!-- Formato por cuenta (Facebook / Instagram): un solo recuadro, una fila por cuenta -->
-                <div x-show="hasSingleMediaAttached && selectedAccounts.some(id => ['facebook', 'instagram', 'instagram_login'].includes(charLimits[id]?.platform))"
+                <div x-show="hasMediaAttached && selectedAccounts.some(id => ['facebook', 'instagram', 'instagram_login'].includes(charLimits[id]?.platform))"
                      x-cloak
                      class="border border-stone-200 rounded-xl bg-white divide-y divide-stone-100">
                     <div class="px-4 pt-3 pb-2 text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Formato de publicación</div>
 
                     <!-- Facebook rows -->
                     <template x-for="accId in selectedAccounts" :key="'facebook-video-settings-' + accId">
-                        <div x-show="charLimits[accId]?.platform === 'facebook' && hasSingleMediaAttached"
+                        <div x-show="charLimits[accId]?.platform === 'facebook' && hasMediaAttached"
                              x-data="{ facebookPostType: platformExtras[accId]?.post_type || 'video' }"
                              class="px-4 py-3 space-y-2">
                             {% comment %}
@@ -588,15 +605,15 @@
                                 <span class="flex-1 min-w-0 truncate text-sm font-medium text-stone-700" x-text="charLimits[accId]?.name"></span>
                                 <select :name="'facebook_post_type_' + accId"
                                         x-model="facebookPostType"
-                                        :disabled="charLimits[accId]?.platform !== 'facebook' || !hasSingleMediaAttached"
+                                        :disabled="charLimits[accId]?.platform !== 'facebook' || !hasMediaAttached"
                                         class="w-48 text-sm px-3 py-1.5 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                    <option value="video" x-text="hasSingleVideoAttached ? 'Video normal' : 'Publicación'"></option>
+                                    <option value="video" x-text="hasSingleVideoAttached ? 'Video normal' : (hasSingleMediaAttached ? 'Publicación' : 'Publicación con varias fotos')"></option>
                                     <option value="reel" :hidden="!hasSingleVideoAttached" :disabled="!hasSingleVideoAttached">Reel</option>
-                                    <option value="story">Historia</option>
+                                    <option value="story" x-text="hasSingleMediaAttached ? 'Historia' : 'Historias (una por archivo)'"></option>
                                 </select>
                             </div>
                             <p x-show="facebookPostType === 'reel'" class="text-[11px] text-stone-400 pl-8">Reel: video vertical de 3 a 90 segundos.</p>
-                            <p x-show="facebookPostType === 'story'" class="text-[11px] text-stone-400 pl-8">Historia: dura 24 horas, sin texto ni stickers. Usa 9:16.</p>
+                            <p x-show="facebookPostType === 'story'" class="text-[11px] text-stone-400 pl-8"><span x-show="!hasSingleMediaAttached">Se publica una historia por archivo, en el orden en que están adjuntos. </span>Dura 24 horas, sin texto ni stickers. Usa 9:16.</p>
                             <div x-show="facebookPostType === 'reel'" class="pl-8">
                                 {% include "composer/partials/reel_cover_picker.html" %}
                             </div>
@@ -605,7 +622,7 @@
 
                     <!-- Instagram rows -->
                     <template x-for="accId in selectedAccounts" :key="'instagram-cover-' + accId">
-                        <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform) && hasSingleMediaAttached"
+                        <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform) && hasMediaAttached"
                              x-data="{ igPostType: platformExtras[accId]?.post_type === 'story' ? 'story' : '' }"
                              class="px-4 py-3 space-y-2">
                             <input type="hidden" :name="'ig_panel_' + accId" value="1"
@@ -619,11 +636,11 @@
                                         x-model="igPostType"
                                         :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)"
                                         class="w-48 text-sm px-3 py-1.5 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                    <option value="" x-text="hasSingleVideoAttached ? 'Reel' : 'Publicación'"></option>
-                                    <option value="story">Historia</option>
+                                    <option value="" x-text="hasSingleVideoAttached ? 'Reel' : (hasSingleMediaAttached ? 'Publicación' : 'Carrusel')"></option>
+                                    <option value="story" x-text="hasSingleMediaAttached ? 'Historia' : 'Historias (una por archivo)'"></option>
                                 </select>
                             </div>
-                            <p x-show="igPostType === 'story'" class="text-[11px] text-stone-400 pl-8">Historia: dura 24 horas, sin texto, stickers ni música. Usa 9:16.</p>
+                            <p x-show="igPostType === 'story'" class="text-[11px] text-stone-400 pl-8"><span x-show="!hasSingleMediaAttached">Se publica una historia por archivo, en el orden en que están adjuntos. </span>Dura 24 horas, sin texto, stickers ni música. Usa 9:16.</p>
                             <template x-if="hasSingleVideoAttached && igPostType !== 'story' && ['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
                                 <div class="pl-8">
                                     {% include "composer/partials/reel_cover_picker.html" %}
@@ -2297,12 +2314,31 @@ function composerApp() {
                 this.hasVideoAttached = videoCount > 0;
                 this.hasSingleVideoAttached = thumbs.length === 1 && videoCount === 1;
                 this.hasSingleMediaAttached = thumbs.length === 1;
+                // Position badges and move-button visibility (reordering)
+                thumbs.forEach((thumb, i) => {
+                    thumb.dataset.pos = String(i + 1);
+                    thumb.classList.toggle('has-siblings', thumbs.length > 1);
+                    thumb.classList.toggle('is-first', i === 0);
+                    thumb.classList.toggle('is-last', i === thumbs.length - 1);
+                });
             };
             this.$nextTick(syncVideoAttached);
             // Watch the list itself too: HX-Trigger events can fire before htmx
             // swaps the new thumbnail in, which left the single-media state
             // stale (e.g. the Story / format options never appearing).
             const mediaListEl = document.getElementById('media-list');
+            if (mediaListEl && window.Sortable) {
+                // Drag to reorder (the arrows on each thumbnail do the same).
+                window.Sortable.create(mediaListEl, {
+                    disabled: mediaListEl.hasAttribute('data-readonly'),
+                    draggable: '.media-thumb[data-reorder-url]',
+                    filter: '.remove-btn, .move-btn',
+                    preventOnFilter: false,
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: () => window.saveMediaOrder && window.saveMediaOrder(),
+                });
+            }
             if (mediaListEl && window.MutationObserver) {
                 new MutationObserver(() => syncVideoAttached()).observe(mediaListEl, { childList: true, subtree: true });
             }
@@ -2968,6 +3004,33 @@ function composerApp() {
 /* ── Publish Split-Button (vanilla JS) ────────────────────────── */
 (function() {
     const anchor = document.getElementById('publish-anchor');
+    window.saveMediaOrder = function () {
+        const thumbs = Array.from(document.querySelectorAll('#media-list .media-thumb[data-attachment-id]'));
+        const first = thumbs.find(t => t.dataset.reorderUrl);
+        if (!first) return;
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value
+            || document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+        const body = new URLSearchParams({ order: thumbs.map(t => t.dataset.attachmentId).join(',') });
+        fetch(first.dataset.reorderUrl, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body,
+        }).then(r => {
+            if (!r.ok) return r.text().then(t => { throw new Error(t || 'No se pudo guardar el orden'); });
+            document.body.dispatchEvent(new CustomEvent('previewUpdate'));
+        }).catch(err => alert(err.message || 'No se pudo guardar el orden'));
+    };
+    window.moveMediaThumb = function (btn, dir) {
+        const thumb = btn.closest('.media-thumb');
+        if (!thumb) return;
+        const sib = dir < 0 ? thumb.previousElementSibling : thumb.nextElementSibling;
+        if (!sib || !sib.classList.contains('media-thumb')) return;
+        if (dir < 0) sib.before(thumb); else sib.after(thumb);
+        // Re-sync badges, then persist.
+        document.body.dispatchEvent(new CustomEvent('previewUpdate'));
+        window.saveMediaOrder();
+    };
+
     const modeBtn = document.getElementById('publish-mode-btn');
     const modeLabel = document.getElementById('publish-mode-label');
     const modeIcon = document.getElementById('publish-mode-icon');

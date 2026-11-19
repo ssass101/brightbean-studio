@@ -303,8 +303,7 @@ def _sync_platform_posts(request, post, workspace, initial_status=None):
             facebook_post_type = request.POST.get(f"facebook_post_type_{acc_id}", "").strip()
             media_types = list(post.media_attachments.values_list("media_asset__media_type", flat=True)[:2])
             has_exactly_one_video = media_types == ["video"]
-            has_exactly_one_media = len(media_types) == 1
-            if facebook_post_type == "story" and has_exactly_one_media:
+            if facebook_post_type == "story" and media_types:
                 extra["post_type"] = "story"
             elif facebook_post_type == "reel" and has_exactly_one_video:
                 extra["post_type"] = "reel"
@@ -2596,6 +2595,44 @@ def upload_media(request, workspace_id, post_id=None):
     response["X-Uploaded-Asset-Id"] = str(asset.id)
     response["X-Uploaded-Asset-Url"] = asset.file.url
     return response
+
+
+@login_required
+@require_permission("create_posts")
+@require_POST
+def reorder_media(request, workspace_id, post_id):
+    """Persist a new order for a post's media attachments.
+
+    ``order`` is the comma-separated PostMedia ids in their new order; it has to
+    name exactly the attachments the post has now (no more, no fewer).
+    """
+    workspace = _get_workspace(request, workspace_id)
+    post = get_object_or_404(Post, id=post_id, workspace=workspace)
+    require_post_edit(request, post)
+
+    if _children_are_locked(post.platform_posts.all()):
+        return HttpResponse("This post is already published.", status=400, content_type="text/plain")
+
+    ids = [i for i in request.POST.get("order", "").split(",") if i]
+    if not all(_is_valid_uuid(i) for i in ids):
+        return HttpResponse("Invalid order.", status=400, content_type="text/plain")
+    attachments = {str(a.id): a for a in post.media_attachments.all()}
+    if len(ids) != len(set(ids)) or set(ids) != set(attachments):
+        return HttpResponse("The media changed, reload the page.", status=409, content_type="text/plain")
+
+    changed = False
+    with transaction.atomic():
+        for position, att_id in enumerate(ids, start=1):
+            att = attachments[att_id]
+            if att.position != position:
+                att.position = position
+                att.save(update_fields=["position"])
+                changed = True
+    if changed:
+        # Option A: changing media on an approved post sends it back for re-approval.
+        _revert_approved_to_review(post)
+
+    return HttpResponse(status=204, headers={"HX-Trigger": "previewUpdate"})
 
 
 @login_required
