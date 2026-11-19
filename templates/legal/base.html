@@ -1,0 +1,30 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Canvas Social Manager</title>
+    <link rel="icon" href="{% static 'favicon/favicon.ico' %}" sizes="any">
+    <link rel="icon" type="image/png" sizes="96x96" href="{% static 'favicon/favicon-96x96.png' %}">
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+</head>
+<body>
+<main class="auth-bg min-h-screen py-12 px-4" style="font-family: var(--font-body);">
+    <div class="w-full max-w-3xl mx-auto">
+        <div class="text-center mb-8">
+            <img src="{% static 'img/canvas-logo.webp' %}" alt="Canvas Digital Experiences" class="h-20 w-auto object-contain inline-block mb-4">
+            <h1 class="text-2xl font-bold tracking-tight" style="color: var(--text-primary);">{% block heading %}{% endblock %}</h1>
+            <p class="text-sm mt-1" style="color: var(--text-secondary);">Última actualización: 19 de noviembre de 2026</p>
+        </div>
+        <div class="auth-card" style="color: var(--text-primary); line-height: 1.7; font-size: 0.95rem;">
+            {% block body %}{% endblock %}
+        </div>
+        <p class="text-center text-sm mt-6" style="color: var(--text-secondary);">
+            <a href="{% url 'legal_privacy' %}" class="underline">Política de privacidad</a> ·
+            <a href="{% url 'legal_terms' %}" class="underline">Términos del servicio</a> ·
+            <a href="https://canvasde.com" class="underline">Canvas Digital Experiences</a>
+        </p>
+    </div>
+</main>
+</body>
+</html>
