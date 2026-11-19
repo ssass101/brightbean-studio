@@ -843,6 +843,13 @@ class PublishEngine:
                         temp_files.append(tmp.name)
                         download_to_path(thumb_asset.file, tmp.name)
                         extra["thumbnail_file"] = tmp.name
+                        # Instagram fetches the Reel cover server-side, so it
+                        # needs a public URL rather than a local file.
+                        if platform in ("instagram", "instagram_login"):
+                            cover_url = thumb_asset.file.url
+                            if cover_url.startswith("/"):
+                                cover_url = f"{app_url}{cover_url}"
+                            extra["cover_url"] = cover_url
                 except MediaAsset.DoesNotExist:
                     logger.warning("Thumbnail asset %s not found", thumb_asset_id)
 

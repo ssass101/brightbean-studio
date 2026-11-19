@@ -30,6 +30,7 @@ from apps.common.validators import (
     parse_and_truncate_youtube_tag_string,
     safe_xml_fromstring,
 )
+from django.core.exceptions import ValidationError as DjangoValidationError
 from apps.media_library.models import MediaAsset
 from apps.media_library.validators import ALLOWED_MIME_TYPES, get_accepted_file_types, sniff_mime
 from apps.members.decorators import membership_permissions, require_permission, require_post_edit
@@ -237,6 +238,26 @@ def _readonly_rejection(request, post):
     )
 
 
+def _apply_cover_asset(request, extra, acc_id, workspace):
+    """Store (or clear) the Reel cover image chosen for one account.
+
+    The cover is an image MediaAsset of this workspace, either uploaded or
+    captured from a video frame by the composer's frame picker. A blank value
+    clears the cover; an id from another workspace is ignored.
+    """
+    if f"cover_panel_{acc_id}" not in request.POST:
+        return
+    asset_id = request.POST.get(f"cover_asset_id_{acc_id}", "").strip()
+    try:
+        valid = bool(asset_id) and MediaAsset.objects.filter(id=asset_id, workspace=workspace, media_type="image").exists()
+    except (ValueError, DjangoValidationError):
+        valid = False
+    if valid:
+        extra["thumbnail_asset_id"] = asset_id
+    else:
+        extra.pop("thumbnail_asset_id", None)
+
+
 def _sync_platform_posts(request, post, workspace, initial_status=None):
     """Sync platform post selections from form data.
 
@@ -293,6 +314,15 @@ def _sync_platform_posts(request, post, workspace, initial_status=None):
                 # Facebook's video endpoint. Choosing regular video therefore
                 # clears the hint rather than recording it.
                 extra.pop("post_type", None)
+            # Optional Reel cover (image asset), chosen from the video or uploaded.
+            _apply_cover_asset(request, extra, acc_id, workspace)
+            pp.platform_extra = extra
+
+        elif account.platform in ("instagram", "instagram_login") and f"cover_panel_{acc_id}" in request.POST:
+            # Instagram Reel cover. Gated on the panel's hidden marker so a
+            # non-composer save can't wipe a previously chosen cover.
+            extra = {**(pp.platform_extra or {})}
+            _apply_cover_asset(request, extra, acc_id, workspace)
             pp.platform_extra = extra
 
         elif account.platform == "youtube":

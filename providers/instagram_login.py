@@ -342,6 +342,10 @@ class InstagramLoginProvider(SocialProvider):
             # single item.
             payload["media_type"] = "REELS"
             payload["video_url"] = url
+            # Optional custom cover (public image URL chosen in the composer).
+            cover_url = (content.extra or {}).get("cover_url")
+            if cover_url:
+                payload["cover_url"] = cover_url
         else:
             payload["image_url"] = url
 

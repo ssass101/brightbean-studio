@@ -549,6 +549,24 @@ class FacebookProvider(SocialProvider):
         ).json()
         self._raise_for_reel_phase(finish_data, "publish the Reel")
 
+        # Optional custom cover. Best-effort: the Reel is already published, so
+        # a failure here is logged and never fails (or retries) the publish.
+        thumbnail_path = (content.extra or {}).get("thumbnail_file")
+        if thumbnail_path:
+            try:
+                with open(thumbnail_path, "rb") as tf:
+                    thumb_bytes = tf.read()
+                self._request(
+                    "POST",
+                    f"{BASE_URL}/{video_id}/thumbnails",
+                    access_token=access_token,
+                    data={"is_preferred": "true"},
+                    files={"source": ("cover.jpg", thumb_bytes, "image/jpeg")},
+                    timeout=60.0,
+                )
+            except Exception:
+                logger.exception("Facebook Reel cover upload failed for video %s", video_id)
+
         # Publishing already succeeded. Metadata is best-effort so a delayed
         # post_id or malformed response cannot trigger a duplicate retry.
         video_fields: dict = {}
