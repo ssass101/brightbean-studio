@@ -24,7 +24,11 @@ from django.utils import timezone
 # dentro de estos días (o antes). Ajustar aquí para cambiar la sensibilidad.
 LOW_CONTENT_DAYS = 3
 
-_STATUS_ORDER = {"empty": 0, "disconnected": 1, "low": 2, "ok": 3}
+# Bloque "Próximas fechas": cuántas mostrar y hasta cuántos días hacia adelante mirar.
+UPCOMING_LIMIT = 6
+UPCOMING_DAYS = 60
+
+_STATUS_ORDER ={"empty": 0, "disconnected": 1, "low": 2, "ok": 3}
 _WEEKDAYS_SHORT = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
 
 
@@ -117,4 +121,29 @@ def build_overview(user) -> dict:
 
     # Primero los clientes con problemas (sin contenido > desconectadas > poco), luego por nombre.
     rows.sort(key=lambda r: (_STATUS_ORDER.get(r["worst"], 4), r["workspace"].name.lower()))
-    return {"rows": rows, "totals": totals, "low_days": LOW_CONTENT_DAYS}
+    return {
+        "rows": rows,
+        "totals": totals,
+        "low_days": LOW_CONTENT_DAYS,
+        "upcoming_dates": _upcoming_dates(),
+    }
+
+
+def _upcoming_dates() -> list[dict]:
+    """Próximas fechas especiales (feriados, efemérides, fechas comerciales)."""
+    from apps.calendar.holidays import get_upcoming
+    from apps.calendar.views import _es_day_month
+
+    items = []
+    for item in get_upcoming(timezone.localdate(), limit=UPCOMING_LIMIT, days=UPCOMING_DAYS):
+        left = item["days_left"]
+        if left == 0:
+            when = "Hoy"
+        elif left == 1:
+            when = "Mañana"
+        else:
+            when = f"En {left} días"
+        items.append(
+            {**item, "when": when, "label": f"{_WEEKDAYS_SHORT[item['date'].weekday()]} {_es_day_month(item['date'])}"}
+        )
+    return items

@@ -103,6 +103,7 @@ class OverviewTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "accounts/overview.html")
         self.assertContains(resp, "Resumen de cuentas")
+        self.assertContains(resp, "Próximas fechas")
         self.assertContains(resp, "Sin contenido")
         self.assertContains(resp, "Hestia")
 
