@@ -102,6 +102,17 @@ def _notify_reviewers(workspace, actor, *, post, event_type, title, body):
 # ---------------------------------------------------------------------------
 
 
+def _can_approve_internally(workspace, user):
+    """Whether ``user`` is an internal (non-client) member allowed to approve posts."""
+    membership = (
+        WorkspaceMembership.objects.filter(workspace=workspace, user=user)
+        .exclude(workspace_role=WorkspaceMembership.WorkspaceRole.CLIENT)
+        .select_related("custom_role")
+        .first()
+    )
+    return bool(membership and membership.effective_permissions.get("approve_posts", False))
+
+
 def submit_for_review(target, user, workspace):
     """Submit a post (or single platform post) for internal review."""
     post, targets, is_bundled = _resolve_targets(
@@ -127,6 +138,13 @@ def submit_for_review(target, user, workspace):
             stage="pending_review",
             defaults={"reminder_count": 0, "last_reminder_at": None, "escalated": False},
         )
+
+    # With a client stage, someone who can approve internally IS the internal
+    # review: sending it on skips the self-approval step and goes straight to
+    # the client (who is emailed by approve_post).
+    if workspace.approval_workflow_mode == "required_internal_and_client" and _can_approve_internally(workspace, user):
+        approve_post(target, user, workspace)
+        return post
 
     # Notify all reviewers (members with approve_posts permission)
     _notify_reviewers(
@@ -398,6 +416,10 @@ def resubmit_post(target, user, workspace):
             stage="pending_review",
             defaults={"reminder_count": 0, "last_reminder_at": None, "escalated": False},
         )
+
+    if workspace.approval_workflow_mode == "required_internal_and_client" and _can_approve_internally(workspace, user):
+        approve_post(target, user, workspace)
+        return post
 
     _notify_reviewers(
         workspace,
