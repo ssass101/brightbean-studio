@@ -75,8 +75,16 @@ def _record_action(post, platform_post, user, action, comment=""):
 
 
 def _notify_reviewers(workspace, actor, *, post, event_type, title, body):
-    """Notify every workspace member with ``approve_posts`` (except the actor)."""
-    reviewers = WorkspaceMembership.objects.filter(workspace=workspace).select_related("user", "custom_role")
+    """Notify the internal team members with ``approve_posts`` (except the actor).
+
+    Clients are left out: they hold ``approve_posts`` but only act in the
+    client stage, which has its own email with a direct portal link.
+    """
+    reviewers = (
+        WorkspaceMembership.objects.filter(workspace=workspace)
+        .exclude(workspace_role=WorkspaceMembership.WorkspaceRole.CLIENT)
+        .select_related("user", "custom_role")
+    )
     for membership in reviewers:
         perms = membership.effective_permissions
         if perms.get("approve_posts", False) and membership.user != actor:
@@ -126,8 +134,8 @@ def submit_for_review(target, user, workspace):
         user,
         post=post,
         event_type=EventType.POST_SUBMITTED,
-        title="Post submitted for review",
-        body=f'{user.display_name} submitted a post for your review: "{post.caption_snippet}"',
+        title="Publicación enviada a revisión",
+        body=f'{user.display_name} envió una publicación para tu revisión: "{post.caption_snippet}"',
     )
 
     return post
@@ -396,8 +404,8 @@ def resubmit_post(target, user, workspace):
         user,
         post=post,
         event_type=EventType.POST_SUBMITTED,
-        title="Post resubmitted for review",
-        body=f'{user.display_name} resubmitted a post: "{post.caption_snippet}"',
+        title="Publicación reenviada a revisión",
+        body=f'{user.display_name} reenvió una publicación: "{post.caption_snippet}"',
     )
 
     return post
@@ -451,8 +459,8 @@ def _notify_reviewers_of_hold(post, workspace, user, comment):
         user,
         post=post,
         event_type=EventType.APPROVAL_HOLD_REQUESTED,
-        title="Client requested a hold",
-        body=f'{user.display_name} put a post on hold: "{comment[:100]}"',
+        title="El cliente pidió una pausa",
+        body=f'{user.display_name} puso una publicación en espera: "{comment[:100]}"',
     )
 
 
