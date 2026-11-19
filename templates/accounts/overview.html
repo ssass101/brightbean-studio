@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Resumen - Social Manager{% endblock %}
+{% block page_title %}Resumen{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold" style="font-family: var(--font-display); color: var(--text-primary); letter-spacing: -0.015em;">Resumen de cuentas</h1>
+        <p class="text-sm mt-1" style="color: var(--text-secondary);">Publicaciones programadas por delante en cada cuenta. Los clientes que necesitan contenido aparecen primero.</p>
+    </div>
+
+    <!-- Totales -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div class="rounded-xl p-4" style="background: var(--surface-0); border: 1px solid var(--border);">
+            <div class="text-2xl font-bold" style="color: {% if totals.empty %}#dc2626{% else %}var(--text-primary){% endif %};">{{ totals.empty }}</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Cuentas sin contenido programado</div>
+        </div>
+        <div class="rounded-xl p-4" style="background: var(--surface-0); border: 1px solid var(--border);">
+            <div class="text-2xl font-bold" style="color: {% if totals.low %}#d97706{% else %}var(--text-primary){% endif %};">{{ totals.low }}</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Cuentas con contenido para {{ low_days }} días o menos</div>
+        </div>
+        <div class="rounded-xl p-4" style="background: var(--surface-0); border: 1px solid var(--border);">
+            <div class="text-2xl font-bold" style="color: {% if totals.disconnected %}#dc2626{% else %}var(--text-primary){% endif %};">{{ totals.disconnected }}</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Cuentas desconectadas o con error</div>
+        </div>
+        <div class="rounded-xl p-4" style="background: var(--surface-0); border: 1px solid var(--border);">
+            <div class="text-2xl font-bold" style="color: #16a34a;">{{ totals.ok }}</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Cuentas al día (de {{ totals.accounts }})</div>
+        </div>
+    </div>
+
+    <!-- Un bloque por cliente / espacio de trabajo -->
+    <div class="space-y-4">
+        {% for row in rows %}
+        <section class="rounded-xl overflow-hidden" style="background: var(--surface-0); border: 1px solid var(--border);">
+            <a href="{% url 'calendar:calendar' workspace_id=row.workspace.id %}"
+               class="flex items-center gap-3 px-5 py-3 hover:bg-black/[0.02] transition-colors" style="border-bottom: 1px solid var(--border);">
+                {% if row.workspace.icon %}
+                <img src="{{ row.workspace.icon.url }}" alt="" class="w-8 h-8 rounded-md object-cover flex-shrink-0">
+                {% else %}
+                <div class="w-8 h-8 rounded-md flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background: var(--primary);">{{ row.workspace.name|make_list|first|upper }}</div>
+                {% endif %}
+                <span class="font-semibold flex-1 truncate" style="color: var(--text-primary);">{{ row.workspace.name }}</span>
+                <span class="text-xs" style="color: var(--text-secondary);">{{ row.total_scheduled }} programada{{ row.total_scheduled|pluralize }}</span>
+                <span class="text-xs" style="color: var(--text-tertiary);">Abrir calendario &rarr;</span>
+            </a>
+
+            {% if row.accounts %}
+            <div>
+                {% for item in row.accounts %}
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 {% if not forloop.last %}border-b{% endif %}" style="border-color: var(--border);">
+                    <div class="flex items-center gap-3 min-w-0 flex-1" style="min-width: 220px;">
+                        {% if item.account.avatar_url %}
+                        <img src="{{ item.account.avatar_url }}" alt="" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                        {% else %}
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background: var(--surface-2, #f1f1ef); color: var(--text-secondary);">{{ item.account.account_name|make_list|first|upper }}</div>
+                        {% endif %}
+                        <div class="min-w-0">
+                            <div class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ item.account.account_name }}</div>
+                            <div class="text-xs" style="color: var(--text-tertiary);">{{ item.account.get_platform_display }}{% if item.account.account_handle %} &middot; {{ item.account.account_handle }}{% endif %}</div>
+                        </div>
+                    </div>
+
+                    {% if item.status == "disconnected" %}
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fee2e2; color: #b91c1c;">Desconectada: reconectar</span>
+                    {% else %}
+                    <div class="flex items-center gap-5 text-sm">
+                        <div class="text-center" style="min-width: 64px;">
+                            <div class="font-bold" style="color: var(--text-primary);">{{ item.total }}</div>
+                            <div class="text-[11px]" style="color: var(--text-tertiary);">programadas</div>
+                        </div>
+                        <div class="text-center" style="min-width: 64px;">
+                            <div class="font-bold" style="color: var(--text-primary);">{{ item.next_7_days }}</div>
+                            <div class="text-[11px]" style="color: var(--text-tertiary);">próx. 7 días</div>
+                        </div>
+                        <div style="min-width: 150px;" class="text-xs" >
+                            {% if item.total %}
+                            <div style="color: var(--text-secondary);">Próxima: {{ item.next_label }}</div>
+                            <div style="color: var(--text-tertiary);">Hasta: {{ item.last_label }} ({{ item.days_covered }} día{{ item.days_covered|pluralize }})</div>
+                            {% else %}
+                            <div style="color: var(--text-tertiary);">Nada programado</div>
+                            {% endif %}
+                        </div>
+                        {% if item.status == "empty" %}
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fee2e2; color: #b91c1c;">Sin contenido</span>
+                        {% elif item.status == "low" %}
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fef3c7; color: #b45309;">Poco contenido</span>
+                        {% else %}
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #dcfce7; color: #15803d;">Al día</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="px-5 py-4 text-sm" style="color: var(--text-tertiary);">Este espacio de trabajo todavía no tiene cuentas conectadas.</p>
+            {% endif %}
+        </section>
+        {% endfor %}
+    </div>
+
+    <p class="text-xs mt-6" style="color: var(--text-tertiary);">Solo cuentan las publicaciones en estado "Programada" con fecha futura. Los borradores y las pendientes de aprobación no se consideran contenido listo.</p>
+</div>
+{% endblock %}

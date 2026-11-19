@@ -14,34 +14,18 @@ def health_check(request):
 
 @login_required
 def dashboard(request):
-    """Main dashboard - redirects to last used workspace or shows org overview."""
-    from apps.members.models import WorkspaceMembership
+    """Página de inicio: resumen de publicaciones programadas por cuenta.
 
-    user = request.user
+    Si el usuario no pertenece a ningún espacio de trabajo, muestra la pantalla
+    para crear el primero.
+    """
+    from apps.accounts.overview import build_overview
 
-    # Only trust last_workspace_id if the user still has an active membership
-    # in that workspace. Otherwise the org may have been deleted out from under
-    # them and we'd redirect into a 403.
-    if user.last_workspace_id:
-        if WorkspaceMembership.objects.filter(
-            user=user,
-            workspace_id=user.last_workspace_id,
-            workspace__is_archived=False,
-        ).exists():
-            return redirect("calendar:calendar", workspace_id=user.last_workspace_id)
-        user.last_workspace_id = None
-        user.save(update_fields=["last_workspace_id"])
+    overview = build_overview(request.user)
+    if not overview["rows"]:
+        return render(request, "accounts/dashboard.html")
 
-    # Fallback: try to find any workspace the user belongs to
-    membership = (
-        WorkspaceMembership.objects.filter(user=user, workspace__is_archived=False).select_related("workspace").first()
-    )
-    if membership:
-        user.last_workspace_id = membership.workspace.id
-        user.save(update_fields=["last_workspace_id"])
-        return redirect("calendar:calendar", workspace_id=membership.workspace.id)
-
-    return render(request, "accounts/dashboard.html")
+    return render(request, "accounts/overview.html", overview)
 
 
 @login_required
