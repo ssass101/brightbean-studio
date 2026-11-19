@@ -2600,6 +2600,30 @@ def upload_media(request, workspace_id, post_id=None):
 @login_required
 @require_permission("create_posts")
 @require_POST
+def reorder_pending_media(request, workspace_id):
+    """Reorder the media queued in the session before a post is first saved.
+
+    ``order`` is the comma-separated asset ids in their new order; it has to
+    name exactly the assets that are pending now. The session list order is the
+    order the attachments get when the post is created.
+    """
+    workspace = _get_workspace(request, workspace_id)
+    session_key = f"pending_media_{workspace.id}"
+    pending = [str(i) for i in request.session.get(session_key, [])]
+
+    ids = [i for i in request.POST.get("order", "").split(",") if i]
+    if not all(_is_valid_uuid(i) for i in ids):
+        return HttpResponse("Invalid order.", status=400, content_type="text/plain")
+    if len(ids) != len(set(ids)) or set(ids) != set(pending):
+        return HttpResponse("The media changed, reload the page.", status=409, content_type="text/plain")
+
+    request.session[session_key] = ids
+    return HttpResponse(status=204, headers={"HX-Trigger": "previewUpdate"})
+
+
+@login_required
+@require_permission("create_posts")
+@require_POST
 def reorder_media(request, workspace_id, post_id):
     """Persist a new order for a post's media attachments.
 
@@ -2617,6 +2641,10 @@ def reorder_media(request, workspace_id, post_id):
     if not all(_is_valid_uuid(i) for i in ids):
         return HttpResponse("Invalid order.", status=400, content_type="text/plain")
     attachments = {str(a.id): a for a in post.media_attachments.all()}
+    # A thumbnail added before the post was first saved still carries its asset
+    # id (the post was created afterwards): accept either id for an attachment.
+    by_asset = {str(a.media_asset_id): str(a.id) for a in attachments.values()}
+    ids = [i if i in attachments else by_asset.get(i, i) for i in ids]
     if len(ids) != len(set(ids)) or set(ids) != set(attachments):
         return HttpResponse("The media changed, reload the page.", status=409, content_type="text/plain")
 

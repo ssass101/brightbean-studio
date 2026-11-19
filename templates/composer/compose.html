@@ -3005,12 +3005,14 @@ function composerApp() {
 (function() {
     const anchor = document.getElementById('publish-anchor');
     window.saveMediaOrder = function () {
-        const thumbs = Array.from(document.querySelectorAll('#media-list .media-thumb[data-attachment-id]'));
-        const first = thumbs.find(t => t.dataset.reorderUrl);
+        const thumbs = Array.from(document.querySelectorAll('#media-list .media-thumb[data-reorder-url]'));
+        // Prefer a saved-post thumbnail's URL: a list that mixes thumbnails added
+        // before and after the first autosave is ordered by the post endpoint.
+        const first = thumbs.find(t => t.dataset.attachmentId) || thumbs[0];
         if (!first) return;
         const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value
             || document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-        const body = new URLSearchParams({ order: thumbs.map(t => t.dataset.attachmentId).join(',') });
+        const body = new URLSearchParams({ order: thumbs.map(t => t.dataset.attachmentId || t.dataset.pendingAssetId).join(',') });
         fetch(first.dataset.reorderUrl, {
             method: 'POST',
             headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded' },
