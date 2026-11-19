@@ -4,7 +4,7 @@
 {% block page_title %}Resumen{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-8">
+<div class="max-w-7xl mx-auto px-6 py-8">
     <div class="mb-6">
         <h1 class="text-2xl font-bold" style="font-family: var(--font-display); color: var(--text-primary); letter-spacing: -0.015em;">Resumen de cuentas</h1>
         <p class="text-sm mt-1" style="color: var(--text-secondary);">Publicaciones programadas por delante en cada cuenta. Los clientes que necesitan contenido aparecen primero.</p>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- Un bloque por cliente / espacio de trabajo -->
-    <div class="space-y-4">
+    <div class="space-y-6">
         {% for row in rows %}
         <section class="rounded-xl overflow-hidden" style="background: var(--surface-0); border: 1px solid var(--border);">
             <a href="{% url 'calendar:calendar' workspace_id=row.workspace.id %}"
@@ -67,34 +67,40 @@
             </a>
 
             {% if row.accounts %}
-            <div>
+            <div class="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
                 {% for item in row.accounts %}
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 {% if not forloop.last %}border-b{% endif %}" style="border-color: var(--border);">
-                    <div class="flex items-center gap-3 min-w-0 flex-1" style="min-width: 220px;">
+                <div class="rounded-lg p-3.5 flex flex-col gap-3"
+                     style="background: var(--surface-0); border: 1px solid var(--border); border-left: 3px solid {% if item.status == 'disconnected' or item.status == 'empty' %}#ef4444{% elif item.status == 'low' %}#f59e0b{% else %}#22c55e{% endif %};">
+                    <div class="flex items-center gap-3 min-w-0">
                         {% if item.account.avatar_url %}
-                        <img src="{{ item.account.avatar_url }}" alt="" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                        <img src="{{ item.account.avatar_url }}" alt="" class="w-9 h-9 rounded-full object-cover flex-shrink-0">
                         {% else %}
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background: var(--surface-2, #f1f1ef); color: var(--text-secondary);">{{ item.account.account_name|make_list|first|upper }}</div>
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background: var(--surface-2, #f1f1ef); color: var(--text-secondary);">{{ item.account.account_name|make_list|first|upper }}</div>
                         {% endif %}
-                        <div class="min-w-0">
-                            <div class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ item.account.account_name }}</div>
-                            <div class="text-xs" style="color: var(--text-tertiary);">{{ item.account.get_platform_display }}{% if item.account.account_handle %} &middot; {{ item.account.account_handle }}{% endif %}</div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-sm font-semibold truncate" style="color: var(--text-primary);" title="{{ item.account.account_name }}">{{ item.account.account_name }}</div>
+                            <div class="text-xs truncate" style="color: var(--text-tertiary);">{{ item.account.get_platform_display }}{% if item.account.account_handle %} &middot; {{ item.account.account_handle }}{% endif %}</div>
                         </div>
                     </div>
 
                     {% if item.status == "disconnected" %}
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fee2e2; color: #b91c1c;">Desconectada: reconectar</span>
+                    <div>
+                        <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fee2e2; color: #b91c1c;">Desconectada: reconectar</span>
+                    </div>
                     {% else %}
-                    <div class="flex items-center gap-5 text-sm">
-                        <div class="text-center" style="min-width: 64px;">
-                            <div class="font-bold" style="color: var(--text-primary);">{{ item.total }}</div>
-                            <div class="text-[11px]" style="color: var(--text-tertiary);">programadas</div>
-                        </div>
-                        <div class="text-center" style="min-width: 64px;">
-                            <div class="font-bold" style="color: var(--text-primary);">{{ item.next_7_days }}</div>
-                            <div class="text-[11px]" style="color: var(--text-tertiary);">próx. 7 días</div>
-                        </div>
-                        <div style="min-width: 150px;" class="text-xs" >
+                    <div class="flex items-baseline gap-4 text-sm">
+                        <div><span class="text-lg font-bold" style="color: var(--text-primary);">{{ item.total }}</span> <span class="text-[11px]" style="color: var(--text-tertiary);">programadas</span></div>
+                        <div><span class="text-lg font-bold" style="color: var(--text-primary);">{{ item.next_7_days }}</span> <span class="text-[11px]" style="color: var(--text-tertiary);">próx. 7 días</span></div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 min-h-[28px]">
+                        {% if item.status == "empty" %}
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap" style="background: #fee2e2; color: #b91c1c;">Sin contenido</span>
+                        {% elif item.status == "low" %}
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap" style="background: #fef3c7; color: #b45309;">Poco contenido</span>
+                        {% else %}
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap" style="background: #dcfce7; color: #15803d;">Al día</span>
+                        {% endif %}
+                        <div class="text-[11px] text-right leading-snug">
                             {% if item.total %}
                             <div style="color: var(--text-secondary);">Próxima: {{ item.next_label }}</div>
                             <div style="color: var(--text-tertiary);">Hasta: {{ item.last_label }} ({{ item.days_covered }} día{{ item.days_covered|pluralize }})</div>
@@ -102,13 +108,6 @@
                             <div style="color: var(--text-tertiary);">Nada programado</div>
                             {% endif %}
                         </div>
-                        {% if item.status == "empty" %}
-                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fee2e2; color: #b91c1c;">Sin contenido</span>
-                        {% elif item.status == "low" %}
-                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fef3c7; color: #b45309;">Poco contenido</span>
-                        {% else %}
-                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #dcfce7; color: #15803d;">Al día</span>
-                        {% endif %}
                     </div>
                     {% endif %}
                 </div>
