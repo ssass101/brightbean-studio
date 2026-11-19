@@ -289,7 +289,7 @@
                 class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-stone-200 text-stone-400 hover:text-stone-700 hover:border-stone-300 hover:bg-stone-50 transition-all duration-150 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </button>
-        <h1 class="text-base font-semibold text-stone-900" style="letter-spacing: -0.01em;">{% if is_edit %}Edit{% else %}Create{% endif %}</h1>
+        <h1 class="text-base font-semibold text-stone-900" style="letter-spacing: -0.01em;">{% if is_edit %}Editar{% else %}Crear{% endif %}</h1>
         <!-- Preview toggle (mobile only) -->
         <button type="button" @click="showPreviewPanel = true"
                 class="lg:hidden ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 text-xs font-semibold hover:border-stone-300 hover:bg-stone-50 transition-all duration-150 cursor-pointer">
@@ -563,76 +563,75 @@
                     </div>
                 </div>
 
-                <!-- Facebook video destination (regular Page video by default) -->
-                <template x-for="accId in selectedAccounts" :key="'facebook-video-settings-' + accId">
-                    <div x-show="charLimits[accId]?.platform === 'facebook' && hasSingleMediaAttached"
-                         x-data="{ facebookPostType: platformExtras[accId]?.post_type || 'video' }"
-                         class="border border-stone-200 rounded-xl bg-white p-4 space-y-3">
-                        {% comment %}
-                        Marks the panel as present in the submit even when no video is
-                        attached, so a save can clear a stale Reel hint but a non-composer
-                        save can never wipe extras it never rendered.
-                        {% endcomment %}
-                        <input type="hidden" :name="'facebook_panel_' + accId" value="1"
-                               :disabled="charLimits[accId]?.platform !== 'facebook'">
-                        <div class="flex items-center gap-2">
-                            <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
-                                  :class="'pi-' + (charLimits[accId]?.platform || '')"
-                                  x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Formato'"></span>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Publicar como</label>
-                            <select :name="'facebook_post_type_' + accId"
-                                    x-model="facebookPostType"
-                                    :disabled="charLimits[accId]?.platform !== 'facebook' || !hasSingleMediaAttached"
-                                    class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                <option value="video" x-text="hasSingleVideoAttached ? 'Video normal de la página' : 'Publicación normal'"></option>
-                                <option value="reel" :hidden="!hasSingleVideoAttached" :disabled="!hasSingleVideoAttached">Reel de Facebook</option>
-                                <option value="story">Historia de Facebook</option>
-                            </select>
-                            <p x-show="facebookPostType === 'story'" class="text-[11px] text-stone-400 mt-1">Las historias se publican sin texto y duran 24 horas. No admiten stickers ni elementos interactivos.</p>
-                            <p x-show="hasSingleVideoAttached && facebookPostType !== 'story'" class="text-[11px] text-stone-400 mt-1">Los Reels usan el flujo de video vertical de Facebook y deben durar entre 3 y 90 segundos. El video normal de la página es mejor para formatos largos y horizontales.</p>
-                        </div>
-                        <!-- Reel cover (only meaningful for Reels) -->
-                        <div x-show="facebookPostType === 'reel'">
-                            {% include "composer/partials/reel_cover_picker.html" %}
-                        </div>
-                    </div>
-                </template>
+                <!-- Formato por cuenta (Facebook / Instagram): un solo recuadro, una fila por cuenta -->
+                <div x-show="hasSingleMediaAttached && selectedAccounts.some(id => ['facebook', 'instagram', 'instagram_login'].includes(charLimits[id]?.platform))"
+                     x-cloak
+                     class="border border-stone-200 rounded-xl bg-white divide-y divide-stone-100">
+                    <div class="px-4 pt-3 pb-2 text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Formato de publicación</div>
 
-                <!-- Instagram format (Story) and Reel cover (single photo or video) -->
-                <template x-for="accId in selectedAccounts" :key="'instagram-cover-' + accId">
-                    <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform) && hasSingleMediaAttached"
-                         x-data="{ igPostType: platformExtras[accId]?.post_type === 'story' ? 'story' : '' }"
-                         class="border border-stone-200 rounded-xl bg-white p-4 space-y-3">
-                        <input type="hidden" :name="'ig_panel_' + accId" value="1"
-                               :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
-                        <div class="flex items-center gap-2">
-                            <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
-                                  :class="'pi-' + (charLimits[accId]?.platform || '')"
-                                  x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Formato'"></span>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Publicar como</label>
-                            <select :name="'ig_post_type_' + accId"
-                                    x-model="igPostType"
-                                    :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)"
-                                    class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                <option value="" x-text="hasSingleVideoAttached ? 'Reel' : 'Publicación'"></option>
-                                <option value="story">Historia</option>
-                            </select>
-                            <p x-show="igPostType === 'story'" class="text-[11px] text-stone-400 mt-1">Las historias duran 24 horas y se publican sin texto. No admiten stickers, encuestas ni música. Usa una imagen o video vertical 9:16.</p>
-                        </div>
-                        <template x-if="hasSingleVideoAttached && igPostType !== 'story' && ['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
-                            <div>
-                                {% include "composer/partials/reel_cover_picker.html" %}
-                                <p class="text-[11px] text-stone-400 mt-1">Si no eliges una portada, Instagram usa el primer fotograma. Para que no se recorte, usa una imagen vertical 9:16.</p>
+                    <!-- Facebook rows -->
+                    <template x-for="accId in selectedAccounts" :key="'facebook-video-settings-' + accId">
+                        <div x-show="charLimits[accId]?.platform === 'facebook' && hasSingleMediaAttached"
+                             x-data="{ facebookPostType: platformExtras[accId]?.post_type || 'video' }"
+                             class="px-4 py-3 space-y-2">
+                            {% comment %}
+                            Marks the row as present in the submit even when no media is
+                            attached, so a save can clear a stale Reel/Story hint but a
+                            non-composer save can never wipe extras it never rendered.
+                            {% endcomment %}
+                            <input type="hidden" :name="'facebook_panel_' + accId" value="1"
+                                   :disabled="charLimits[accId]?.platform !== 'facebook'">
+                            <div class="flex items-center gap-3">
+                                <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center flex-shrink-0"
+                                      :class="'pi-' + (charLimits[accId]?.platform || '')"
+                                      x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
+                                <span class="flex-1 min-w-0 truncate text-sm font-medium text-stone-700" x-text="charLimits[accId]?.name"></span>
+                                <select :name="'facebook_post_type_' + accId"
+                                        x-model="facebookPostType"
+                                        :disabled="charLimits[accId]?.platform !== 'facebook' || !hasSingleMediaAttached"
+                                        class="w-48 text-sm px-3 py-1.5 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
+                                    <option value="video" x-text="hasSingleVideoAttached ? 'Video normal' : 'Publicación'"></option>
+                                    <option value="reel" :hidden="!hasSingleVideoAttached" :disabled="!hasSingleVideoAttached">Reel</option>
+                                    <option value="story">Historia</option>
+                                </select>
                             </div>
-                        </template>
-                    </div>
-                </template>
+                            <p x-show="facebookPostType === 'reel'" class="text-[11px] text-stone-400 pl-8">Reel: video vertical de 3 a 90 segundos.</p>
+                            <p x-show="facebookPostType === 'story'" class="text-[11px] text-stone-400 pl-8">Historia: dura 24 horas, sin texto ni stickers. Usa 9:16.</p>
+                            <div x-show="facebookPostType === 'reel'" class="pl-8">
+                                {% include "composer/partials/reel_cover_picker.html" %}
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Instagram rows -->
+                    <template x-for="accId in selectedAccounts" :key="'instagram-cover-' + accId">
+                        <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform) && hasSingleMediaAttached"
+                             x-data="{ igPostType: platformExtras[accId]?.post_type === 'story' ? 'story' : '' }"
+                             class="px-4 py-3 space-y-2">
+                            <input type="hidden" :name="'ig_panel_' + accId" value="1"
+                                   :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
+                            <div class="flex items-center gap-3">
+                                <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center flex-shrink-0"
+                                      :class="'pi-' + (charLimits[accId]?.platform || '')"
+                                      x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
+                                <span class="flex-1 min-w-0 truncate text-sm font-medium text-stone-700" x-text="charLimits[accId]?.name"></span>
+                                <select :name="'ig_post_type_' + accId"
+                                        x-model="igPostType"
+                                        :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)"
+                                        class="w-48 text-sm px-3 py-1.5 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
+                                    <option value="" x-text="hasSingleVideoAttached ? 'Reel' : 'Publicación'"></option>
+                                    <option value="story">Historia</option>
+                                </select>
+                            </div>
+                            <p x-show="igPostType === 'story'" class="text-[11px] text-stone-400 pl-8">Historia: dura 24 horas, sin texto, stickers ni música. Usa 9:16.</p>
+                            <template x-if="hasSingleVideoAttached && igPostType !== 'story' && ['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
+                                <div class="pl-8">
+                                    {% include "composer/partials/reel_cover_picker.html" %}
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
 
                 <!-- Pinterest settings (auto-visible when any Pinterest account is selected) -->
                 <template x-for="accId in selectedAccounts" :key="'pin-settings-' + accId">
@@ -1197,7 +1196,7 @@
                                 @click="overrides[accId] = !overrides[accId]"
                                 x-show="!overrides[accId]">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            <span x-text="'Customize ' + (charLimits[accId]?.platform === 'youtube' ? 'YouTube' : (charLimits[accId]?.platform || ''))"></span>
+                            <span x-text="'Personalizar ' + ({facebook: 'Facebook', instagram: 'Instagram', instagram_login: 'Instagram', youtube: 'YouTube', tiktok: 'TikTok', linkedin_company: 'LinkedIn', linkedin_personal: 'LinkedIn', pinterest: 'Pinterest', threads: 'Threads', bluesky: 'Bluesky', mastodon: 'Mastodon'}[charLimits[accId]?.platform] || (charLimits[accId]?.platform || ''))"></span>
                         </button>
                     </template>
                 </div>
@@ -1265,6 +1264,7 @@
 
                 <hr class="border-stone-200">
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 <!-- Tags (dropdown with search & create) -->
                 <div class="relative" x-data="{
                     tags: {{ post.tags|json_attr }},
@@ -1419,6 +1419,7 @@
                               rows="2">{{ form.internal_notes.value|default:"" }}</textarea>
                 </div>
                 {% endif %}
+                </div>
             </div>
 
             <!-- ── Action Bar ─────────────────────────────────────── -->
@@ -1435,7 +1436,7 @@
                 <!-- Autosave indicator -->
                 <div id="autosave-status" class="text-xs text-stone-400 mr-auto hidden sm:flex items-center gap-1.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-stone-300" :class="{ 'bg-emerald-400': lastSaved }"></span>
-                    <span x-text="lastSaved ? 'Saved ' + lastSaved : 'Not saved yet'"></span>
+                    <span x-text="lastSaved ? 'Guardado ' + lastSaved : 'Sin guardar'"></span>
                 </div>
                 <div class="mr-auto sm:hidden"></div>
 
@@ -1494,7 +1495,7 @@
                             <!-- Main menu -->
                             <div id="publish-menu" class="p-1.5">
                                 <!-- Next Available -->
-                                <button type="button" data-mode="add_to_queue" data-label="Next available" data-action-label="Add to Queue"
+                                <button type="button" data-mode="add_to_queue" data-label="Próximo disponible" data-action-label="Agregar a la cola"
                                         data-icon="clock"
                                         class="publish-mode-option w-full flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-stone-50 transition-colors text-left cursor-pointer">
                                     <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -1507,7 +1508,7 @@
                                 </button>
 
                                 <!-- Prioritise -->
-                                <button type="button" data-mode="add_to_queue_priority" data-label="Prioritise" data-action-label="Prioritise"
+                                <button type="button" data-mode="add_to_queue_priority" data-label="Priorizar" data-action-label="Priorizar"
                                         data-icon="priority"
                                         class="publish-mode-option w-full flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-stone-50 transition-colors text-left cursor-pointer">
                                     <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -1520,7 +1521,7 @@
                                 </button>
 
                                 <!-- Now -->
-                                <button type="button" data-mode="publish_now" data-label="Now" data-action-label="Publish Now"
+                                <button type="button" data-mode="publish_now" data-label="Ahora" data-action-label="Publicar ahora"
                                         data-icon="play"
                                         class="publish-mode-option w-full flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-stone-50 transition-colors text-left cursor-pointer">
                                     <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -1533,7 +1534,7 @@
                                 </button>
 
                                 <!-- Set Date and Time -->
-                                <button type="button" data-mode="schedule" data-label="Schedule" data-action-label="Schedule Post"
+                                <button type="button" data-mode="schedule" data-label="Programar" data-action-label="Programar publicación"
                                         data-icon="calendar"
                                         class="publish-mode-option w-full flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-stone-50 transition-colors text-left cursor-pointer"
                                         id="publish-schedule-btn">
@@ -3037,11 +3038,11 @@ function composerApp() {
             // Check if the selected datetime is in the past
             var selected = new Date(dateVal + 'T' + timeVal);
             if (selected <= new Date()) {
-                if (errEl) { errEl.textContent = 'Scheduled time must be in the future.'; errEl.classList.remove('hidden'); }
+                if (errEl) { errEl.textContent = 'La fecha programada debe ser futura.'; errEl.classList.remove('hidden'); }
                 return;
             }
             if (errEl) { errEl.classList.add('hidden'); }
-            setMode('schedule', 'Set date and time', 'Schedule Post', 'calendar');
+            setMode('schedule', 'Fecha y hora', 'Programar publicación', 'calendar');
             hidePopover();
         });
     }
@@ -3069,7 +3070,7 @@ function composerApp() {
     var schedDateInput = document.querySelector('input[name="scheduled_date"]');
     var schedTimeInput = document.querySelector('input[name="scheduled_time"]');
     if (schedDateInput && schedDateInput.value && schedTimeInput && schedTimeInput.value && !prefillIsProposed) {
-        setMode('schedule', 'Set date and time', 'Schedule Post', 'calendar');
+        setMode('schedule', 'Fecha y hora', 'Programar publicación', 'calendar');
     }
 })();
 </script>

@@ -8,14 +8,14 @@ a non-composer save can never wipe a previously chosen cover.
 <input type="hidden" :name="'cover_panel_' + accId" value="1">
 <!-- Reel cover -->
 <div>
-    <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">Portada del Reel</label>
+    <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Portada del Reel (opcional)</label>
     <input type="hidden"
            :name="'cover_asset_id_' + accId"
            :value="platformExtras[accId]?.thumbnail_asset_id || ''">
     <div class="flex items-stretch gap-3">
-        {% include "composer/partials/choose_from_video_card.html" with mode="upload" %}
+        {% include "composer/partials/choose_from_video_card.html" with mode="upload" compact=True %}
         <template x-if="!platformExtras[accId]?.thumbnail_url">
-            <div class="flex-1 max-w-[480px] rounded-lg border-2 border-dashed border-stone-200 bg-stone-50 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition-colors min-h-[104px]"
+            <div class="flex-1 max-w-[480px] rounded-lg border-2 border-dashed border-stone-200 bg-stone-50 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition-colors min-h-[64px]"
                  @dragover.prevent="$el.classList.add('border-orange-400', 'bg-orange-50')"
                  @dragleave="$el.classList.remove('border-orange-400', 'bg-orange-50')"
                  @drop.prevent="handleThumbnailDrop(accId, $event); $el.classList.remove('border-orange-400', 'bg-orange-50')"
@@ -27,7 +27,7 @@ a non-composer save can never wipe a previously chosen cover.
         <template x-if="platformExtras[accId]?.thumbnail_url">
             <div class="relative flex-shrink-0">
                 <img :src="platformExtras[accId].thumbnail_url"
-                     class="h-[104px] w-auto max-w-[480px] object-cover rounded-lg border border-stone-200">
+                     class="h-16 w-auto max-w-[480px] object-cover rounded-lg border border-stone-200">
                 <button type="button" @click="clearThumbnail(accId)"
                         title="Quitar portada"
                         class="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/55 hover:bg-red-500 text-white flex items-center justify-center transition-colors cursor-pointer">
