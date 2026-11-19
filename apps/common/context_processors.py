@@ -122,7 +122,8 @@ def sidebar_context(request):
     show_review_banner = False
     dismissed_at = request.user.review_banner_dismissed_at
     last_login = request.user.last_login
-    if dismissed_at is None or (last_login is not None and last_login > dismissed_at):
+    # Desactivado: pedía reseñas en Trustpilot del producto original.
+    if False and (dismissed_at is None or (last_login is not None and last_login > dismissed_at)):
         show_review_banner = bool(sidebar_channels) or (
             SocialAccount.objects.filter(
                 workspace_id__in=[ws.id for ws in sidebar_workspaces],
