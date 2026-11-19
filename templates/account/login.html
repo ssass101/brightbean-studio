@@ -126,5 +126,11 @@
         <a href="{{ signup_url }}" class="font-semibold hover:underline" style="color: var(--primary);">Registrarse</a>
     </p>
     {% endif %}
+
+    <p class="text-center text-xs mt-4" style="color: var(--text-secondary);">
+        <a href="{% url 'legal_privacy' %}" class="hover:underline">Política de privacidad</a>
+        &middot;
+        <a href="{% url 'legal_terms' %}" class="hover:underline">Términos del servicio</a>
+    </p>
 </div>
 {% endblock %}
