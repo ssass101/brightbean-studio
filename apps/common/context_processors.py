@@ -146,7 +146,16 @@ def sidebar_context(request):
         # (built-in contributor, or a custom role) that would only get a 403.
         "sidebar_can_view_analytics": _can_view_analytics(request),
         "show_review_banner": show_review_banner,
+        # Hide actions the role would only get a 403 on.
+        "sidebar_can_create": bool(_perms(request).get("create_posts", False)),
+        "sidebar_can_connect": bool(_perms(request).get("manage_social_accounts", False)),
     }
+
+
+def _perms(request):
+    from apps.members.decorators import membership_permissions
+
+    return membership_permissions(request)
 
 
 def _can_view_analytics(request):
