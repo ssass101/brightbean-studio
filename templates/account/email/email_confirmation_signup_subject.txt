@@ -1,1 +1,1 @@
-{% autoescape off %}Confirm your email for Canvas Social Manager{% endautoescape %}
+{% autoescape off %}Confirma tu correo para Canvas Social Manager{% endautoescape %}

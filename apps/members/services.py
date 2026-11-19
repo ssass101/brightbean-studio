@@ -560,7 +560,7 @@ def _send_invite_email(invitation) -> bool:
         "app_url": app_url,
     }
 
-    subject = f"You've been invited to join {invitation.organization.name} on Canvas Social Manager"
+    subject = f"Te invitaron a unirte a {invitation.organization.name} en Canvas Social Manager"
     text_content = render_to_string("members/email/invite.txt", context)
     html_content = render_to_string("members/email/invite.html", context)
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join {{ invitation.organization.name }} - Canvas Social Manager</title>
+    <title>Unirte a {{ invitation.organization.name }} - Canvas Social Manager</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -81,9 +81,9 @@
     <div class="card">
         <div class="logo">Canvas Social Manager</div>
 
-        <h1>Join {{ invitation.organization.name }}</h1>
+        <h1>Unirte a {{ invitation.organization.name }}</h1>
         <p class="subtitle">
-            {{ invitation.invited_by.display_name }} invited you to join their team on Canvas Social Manager.
+            {{ invitation.invited_by.display_name }} te invitó a unirte a su equipo en Canvas Social Manager.
         </p>
 
         {% if error %}
@@ -116,7 +116,7 @@
         <form method="POST" action="{{ accept_url }}">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary">
-                Join {{ invitation.organization.name }}
+                Unirme a {{ invitation.organization.name }}
             </button>
         </form>
         {% else %}
