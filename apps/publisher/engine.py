@@ -943,6 +943,9 @@ class PublishEngine:
         if hint is PostType.VIDEO:
             # _publish_video posts media_urls[0] to the video endpoint as-is.
             return first_media_type == "video"
+        if hint is PostType.STORY:
+            # A Story is a single photo or a single video.
+            return media_count == 1 and first_media_type in ("image", "video")
         return True
 
     @staticmethod

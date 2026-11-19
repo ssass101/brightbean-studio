@@ -565,7 +565,7 @@
 
                 <!-- Facebook video destination (regular Page video by default) -->
                 <template x-for="accId in selectedAccounts" :key="'facebook-video-settings-' + accId">
-                    <div x-show="charLimits[accId]?.platform === 'facebook' && hasSingleVideoAttached"
+                    <div x-show="charLimits[accId]?.platform === 'facebook' && hasSingleMediaAttached"
                          x-data="{ facebookPostType: platformExtras[accId]?.post_type || 'video' }"
                          class="border border-stone-200 rounded-xl bg-white p-4 space-y-3">
                         {% comment %}
@@ -579,18 +579,20 @@
                             <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
                                   :class="'pi-' + (charLimits[accId]?.platform || '')"
                                   x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Video Settings'"></span>
+                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Formato'"></span>
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Publicar como</label>
                             <select :name="'facebook_post_type_' + accId"
                                     x-model="facebookPostType"
-                                    :disabled="charLimits[accId]?.platform !== 'facebook' || !hasSingleVideoAttached"
+                                    :disabled="charLimits[accId]?.platform !== 'facebook' || !hasSingleMediaAttached"
                                     class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                <option value="video">Video normal de la página</option>
-                                <option value="reel">Reel de Facebook</option>
+                                <option value="video" x-text="hasSingleVideoAttached ? 'Video normal de la página' : 'Publicación normal'"></option>
+                                <option value="reel" :hidden="!hasSingleVideoAttached" :disabled="!hasSingleVideoAttached">Reel de Facebook</option>
+                                <option value="story">Historia de Facebook</option>
                             </select>
-                            <p class="text-[11px] text-stone-400 mt-1">Los Reels usan el flujo de video vertical de Facebook y deben durar entre 3 y 90 segundos. El video normal de la página es mejor para formatos largos y horizontales.</p>
+                            <p x-show="facebookPostType === 'story'" class="text-[11px] text-stone-400 mt-1">Las historias se publican sin texto y duran 24 horas. No admiten stickers ni elementos interactivos.</p>
+                            <p x-show="hasSingleVideoAttached && facebookPostType !== 'story'" class="text-[11px] text-stone-400 mt-1">Los Reels usan el flujo de video vertical de Facebook y deben durar entre 3 y 90 segundos. El video normal de la página es mejor para formatos largos y horizontales.</p>
                         </div>
                         <!-- Reel cover (only meaningful for Reels) -->
                         <div x-show="facebookPostType === 'reel'">
@@ -599,17 +601,31 @@
                     </div>
                 </template>
 
-                <!-- Instagram Reel cover (auto-visible when an Instagram account is selected with a single video) -->
+                <!-- Instagram format (Story) and Reel cover (single photo or video) -->
                 <template x-for="accId in selectedAccounts" :key="'instagram-cover-' + accId">
-                    <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform) && hasSingleVideoAttached"
+                    <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform) && hasSingleMediaAttached"
+                         x-data="{ igPostType: platformExtras[accId]?.post_type === 'story' ? 'story' : '' }"
                          class="border border-stone-200 rounded-xl bg-white p-4 space-y-3">
+                        <input type="hidden" :name="'ig_panel_' + accId" value="1"
+                               :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
                         <div class="flex items-center gap-2">
                             <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
                                   :class="'pi-' + (charLimits[accId]?.platform || '')"
                                   x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Reel'"></span>
+                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Formato'"></span>
                         </div>
-                        <template x-if="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Publicar como</label>
+                            <select :name="'ig_post_type_' + accId"
+                                    x-model="igPostType"
+                                    :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)"
+                                    class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
+                                <option value="" x-text="hasSingleVideoAttached ? 'Reel' : 'Publicación'"></option>
+                                <option value="story">Historia</option>
+                            </select>
+                            <p x-show="igPostType === 'story'" class="text-[11px] text-stone-400 mt-1">Las historias duran 24 horas y se publican sin texto. No admiten stickers, encuestas ni música. Usa una imagen o video vertical 9:16.</p>
+                        </div>
+                        <template x-if="hasSingleVideoAttached && igPostType !== 'story' && ['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
                             <div>
                                 {% include "composer/partials/reel_cover_picker.html" %}
                                 <p class="text-[11px] text-stone-400 mt-1">Si no eliges una portada, Instagram usa el primer fotograma. Para que no se recorte, usa una imagen vertical 9:16.</p>
@@ -2108,6 +2124,7 @@ function composerApp() {
         hasMediaAttached: false,
         hasVideoAttached: false,
         hasSingleVideoAttached: false,
+        hasSingleMediaAttached: false,
         showFramePicker: false,
         framePickerAccId: null,
         framePickerMode: 'upload',
@@ -2278,6 +2295,7 @@ function composerApp() {
                 this.hasMediaAttached = thumbs.length > 0;
                 this.hasVideoAttached = videoCount > 0;
                 this.hasSingleVideoAttached = thumbs.length === 1 && videoCount === 1;
+                this.hasSingleMediaAttached = thumbs.length === 1;
             };
             this.$nextTick(syncVideoAttached);
             document.body.addEventListener('previewUpdate', syncVideoAttached);

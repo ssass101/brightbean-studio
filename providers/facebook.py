@@ -312,6 +312,8 @@ class FacebookProvider(SocialProvider):
 
         if content.post_type == PostType.IMAGE and content.media_urls:
             return self._publish_photo(access_token, page_id, content)
+        if content.post_type == PostType.STORY and len(content.media_urls) == 1:
+            return self._publish_story(access_token, page_id, content)
         if content.post_type == PostType.REEL:
             return self._publish_reel(access_token, page_id, content)
         if content.post_type == PostType.VIDEO and content.media_urls:
@@ -597,6 +599,77 @@ class FacebookProvider(SocialProvider):
                 "video_id": video_id,
                 **{k: v for k, v in video_fields.items() if k in ("post_id", "permalink_url")},
             },
+        )
+
+    def _publish_story(self, access_token: str, page_id: str, content: PublishContent) -> PublishResult:
+        """Publish a Page Story (one photo or one video).
+
+        Photo: stage an unpublished photo, then publish it to /photo_stories.
+        Video: the same start/upload/finish protocol as Reels, on /video_stories.
+        Stories take no caption, so none is sent.
+        """
+        url = content.media_urls[0]
+
+        if not content.is_video(0):
+            staged = self._request(
+                "POST",
+                f"{BASE_URL}/{page_id}/photos",
+                access_token=access_token,
+                json={"url": url, "published": False},
+            ).json()
+            photo_id = staged.get("id")
+            if not photo_id:
+                raise PublishError(
+                    "Facebook did not accept the Story photo",
+                    platform=self.platform_name,
+                    raw_response=staged,
+                )
+            data = self._request(
+                "POST",
+                f"{BASE_URL}/{page_id}/photo_stories",
+                access_token=access_token,
+                json={"photo_id": photo_id},
+            ).json()
+            self._raise_for_reel_phase(data, "publish the Story")
+            story_id = str(data.get("post_id") or photo_id)
+            return PublishResult(
+                platform_post_id=self._stored_post_id(story_id),
+                url=f"https://www.facebook.com/{story_id}",
+                extra={"story": True, "photo_id": photo_id},
+            )
+
+        start_data = self._request(
+            "POST",
+            f"{BASE_URL}/{page_id}/video_stories",
+            access_token=access_token,
+            data={"upload_phase": "start"},
+        ).json()
+        video_id = start_data.get("video_id")
+        upload_url = start_data.get("upload_url")
+        if not video_id or not upload_url:
+            raise PublishError(
+                "Facebook did not create a Story upload session",
+                platform=self.platform_name,
+                raw_response=start_data,
+            )
+        upload_resp = self._request(
+            "POST",
+            upload_url,
+            headers={"Authorization": f"OAuth {access_token}", "file_url": url},
+        )
+        self._raise_for_reel_phase(self._safe_json(upload_resp), "upload the Story video")
+        finish_data = self._request(
+            "POST",
+            f"{BASE_URL}/{page_id}/video_stories",
+            access_token=access_token,
+            data={"upload_phase": "finish", "video_id": video_id},
+        ).json()
+        self._raise_for_reel_phase(finish_data, "publish the Story")
+        story_id = str(finish_data.get("post_id") or video_id)
+        return PublishResult(
+            platform_post_id=self._stored_post_id(story_id),
+            url=f"https://www.facebook.com/{story_id}",
+            extra={"story": True, "video_id": video_id},
         )
 
     def _raise_for_reel_phase(self, data: dict, action: str) -> None:

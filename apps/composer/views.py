@@ -303,7 +303,10 @@ def _sync_platform_posts(request, post, workspace, initial_status=None):
             facebook_post_type = request.POST.get(f"facebook_post_type_{acc_id}", "").strip()
             media_types = list(post.media_attachments.values_list("media_asset__media_type", flat=True)[:2])
             has_exactly_one_video = media_types == ["video"]
-            if facebook_post_type == "reel" and has_exactly_one_video:
+            has_exactly_one_media = len(media_types) == 1
+            if facebook_post_type == "story" and has_exactly_one_media:
+                extra["post_type"] = "story"
+            elif facebook_post_type == "reel" and has_exactly_one_video:
                 extra["post_type"] = "reel"
             else:
                 # Only the deviation from the default is worth storing. A lone
@@ -318,10 +321,14 @@ def _sync_platform_posts(request, post, workspace, initial_status=None):
             _apply_cover_asset(request, extra, acc_id, workspace)
             pp.platform_extra = extra
 
-        elif account.platform in ("instagram", "instagram_login") and f"cover_panel_{acc_id}" in request.POST:
-            # Instagram Reel cover. Gated on the panel's hidden marker so a
-            # non-composer save can't wipe a previously chosen cover.
+        elif account.platform in ("instagram", "instagram_login") and f"ig_panel_{acc_id}" in request.POST:
+            # Instagram format (Story) and Reel cover. Gated on the panel's
+            # hidden marker so a non-composer save can't wipe a previous choice.
             extra = {**(pp.platform_extra or {})}
+            if request.POST.get(f"ig_post_type_{acc_id}", "").strip() == "story":
+                extra["post_type"] = "story"
+            elif extra.get("post_type") == "story":
+                extra.pop("post_type", None)
             _apply_cover_asset(request, extra, acc_id, workspace)
             pp.platform_extra = extra
 
