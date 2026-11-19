@@ -1231,7 +1231,16 @@ def save_post(request, workspace_id, post_id=None):
         _save_version(post, request.user)
         from apps.approvals.services import submit_for_review
 
-        submit_for_review(post, request.user, workspace)
+        if not submit_for_review(post, request.user, workspace):
+            return JsonResponse(
+                {
+                    "errors": {
+                        "approval": "No hay nada para enviar a aprobación: la publicación ya está programada, "
+                        "publicada o en revisión. Para enviarla, pásala primero a borrador."
+                    }
+                },
+                status=400,
+            )
         if request.htmx:
             return HttpResponse(
                 status=204,

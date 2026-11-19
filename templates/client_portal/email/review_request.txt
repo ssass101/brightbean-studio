@@ -1,0 +1,9 @@
+Hola {{ client_user.display_name }},
+
+Tienes publicaciones de {{ workspace.name }} para revisar y aprobar{% if pending_count %} ({{ pending_count }} pendiente{{ pending_count|pluralize }}){% endif %}.
+
+Entra con un clic desde este enlace, sin contraseña:
+
+{{ magic_url }}
+
+El enlace se puede usar una vez y vence en {{ link_days }} días. Si vence, pide uno nuevo a tu ejecutivo de cuenta.

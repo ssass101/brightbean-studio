@@ -173,15 +173,31 @@ def approve_post(target, user, workspace, comment=""):
             )
             _notify_clients(post, workspace)
 
+    # Final approval: a post that carries a date (committed or proposed) goes
+    # straight to scheduled, so nobody has to come back and press Schedule.
+    scheduled_now, expired = _auto_schedule_approved(post, [pp for pp in moved if pp.status == "approved"])
+
     # Only tell the author "approved" when the post actually reached approved —
     # in two-stage mode an internal approval that advances to pending_client is
     # not done yet (the client still has to sign off, which re-enters this fn).
     if post.author and post.author != user and not advanced_to_client:
+        if scheduled_now:
+            title = "Publicación aprobada y programada"
+            body = f'"{post.caption_snippet}" fue aprobada por {user.display_name} y quedó programada.'
+        elif expired:
+            title = "Aprobada, pero la fecha ya pasó"
+            body = (
+                f'"{post.caption_snippet}" fue aprobada por {user.display_name}, pero su fecha ya pasó. '
+                "Elige una fecha nueva para programarla."
+            )
+        else:
+            title = "Post approved"
+            body = f'Your post "{post.caption_snippet}" was approved by {user.display_name}.'
         notify(
             user=post.author,
             event_type=EventType.POST_APPROVED,
-            title="Post approved",
-            body=f'Your post "{post.caption_snippet}" was approved by {user.display_name}.',
+            title=title,
+            body=body,
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),
@@ -189,6 +205,37 @@ def approve_post(target, user, workspace, comment=""):
         )
 
     return post
+
+
+def _auto_schedule_approved(post, approved_pps):
+    """Schedule just-approved children that already carry a date.
+
+    The date is the child's own ``scheduled_at`` or, failing that, the post's
+    draft-stage ``proposed_publish_at``. A date still in the future schedules
+    the child; one that already passed leaves it approved (never publish late
+    by surprise) and is reported back. Returns ``(scheduled, expired)`` lists.
+    """
+    from django.utils import timezone
+
+    from apps.composer.services import sync_post_scheduled_at
+
+    scheduled, expired = [], []
+    now = timezone.now()
+    for pp in approved_pps:
+        when = pp.scheduled_at or post.proposed_publish_at
+        if not when:
+            continue
+        if when <= now:
+            expired.append(pp)
+            continue
+        if pp.scheduled_at != when:
+            pp.scheduled_at = when
+            pp.save(update_fields=["scheduled_at", "updated_at"])
+        if _transition_or_skip(pp, "scheduled"):
+            scheduled.append(pp)
+    if scheduled:
+        sync_post_scheduled_at(post)
+    return scheduled, expired
 
 
 def request_changes(target, user, workspace, comment):
@@ -416,7 +463,16 @@ def _notify_clients(post, workspace):
         workspace_role=WorkspaceMembership.WorkspaceRole.CLIENT,
     ).select_related("user")
 
+    from apps.client_portal.services import send_review_request
+
     for membership in client_memberships:
+        # One email per batch with a one-click portal link; fall back to the
+        # plain notification only if that email could not be sent.
+        try:
+            send_review_request(workspace, membership.user)
+            continue
+        except Exception:
+            logger.exception("Could not send review-request link to %s", membership.user.email)
         notify(
             user=membership.user,
             event_type=EventType.CLIENT_APPROVAL_REQUESTED,

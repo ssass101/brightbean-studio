@@ -79,7 +79,7 @@ def generate_magic_link(workspace, client_user, created_by):
         "app_url": app_url,
     }
 
-    subject = f"{workspace.name} - Posts ready for your review"
+    subject = f"{workspace.name}: publicaciones listas para tu revisión"
     text_content = render_to_string("client_portal/email/magic_link.txt", context)
     html_content = render_to_string("client_portal/email/magic_link.html", context)
 
@@ -173,3 +173,58 @@ def create_portal_session(request, user, workspace):
     request.session["portal_workspace_id"] = str(workspace.id)
     # 30-day session
     request.session.set_expiry(30 * 24 * 60 * 60)
+
+
+REVIEW_LINK_DAYS = 7
+REVIEW_MAIL_COOLDOWN_SECONDS = 30 * 60
+
+
+def send_review_request(workspace, client_user):
+    """Email a client a one-click link to the portal approval queue.
+
+    One email per client per half hour: posts sent in a burst share a single
+    message, since the portal lists everything pending anyway. The link lasts
+    seven days. Returns the token, or None when the cooldown suppressed it.
+    Raises if the email cannot be sent (the token is rolled back).
+    """
+    from datetime import timedelta
+
+    from django.core.cache import cache
+
+    from apps.composer.models import Post
+
+    cooldown_key = f"portal-review-mail:{workspace.id}:{client_user.pk}"
+    if cache.get(cooldown_key):
+        return None
+
+    pending = (
+        Post.objects.for_workspace(workspace.id).filter(platform_posts__status="pending_client").distinct().count()
+    )
+    token = MagicLinkToken.objects.create(
+        user=client_user,
+        workspace=workspace,
+        expires_at=timezone.now() + timedelta(days=REVIEW_LINK_DAYS),
+    )
+    app_url = getattr(settings, "APP_URL", "http://localhost:8000").rstrip("/")
+    context = {
+        "client_user": client_user,
+        "workspace": workspace,
+        "magic_url": f"{app_url}/portal/{token.token}/",
+        "pending_count": pending,
+        "link_days": REVIEW_LINK_DAYS,
+    }
+    msg = EmailMultiAlternatives(
+        subject=f"{workspace.name}: tienes publicaciones para aprobar",
+        body=render_to_string("client_portal/email/review_request.txt", context),
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@localhost"),
+        to=[client_user.email],
+        headers=transactional(),
+    )
+    msg.attach_alternative(render_to_string("client_portal/email/review_request.html", context), "text/html")
+    try:
+        send_or_raise(msg)
+    except Exception:
+        MagicLinkToken.objects.filter(pk=token.pk).delete()
+        raise
+    cache.set(cooldown_key, 1, REVIEW_MAIL_COOLDOWN_SECONDS)
+    return token
