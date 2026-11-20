@@ -14,8 +14,8 @@
     main:has(.composer-main) > div { overflow: hidden !important; }
     .composer-main { padding: 0 !important; overflow: hidden; }
 
-    /* Panels */
-    .panel-center { flex: 1; min-width: 0; }
+    /* Panels — editor capped, preview grows to fill (no empty side bands) */
+    .panel-center { flex: 1 1 0; min-width: 0; max-width: 660px; }
     .panel-right  {
         /* Mobile: off-canvas drawer sliding in from the right */
         position: fixed; inset: 0 0 0 auto;
@@ -29,11 +29,12 @@
     @media (min-width: 1024px) {
         .panel-right {
             position: static; inset: auto;
-            width: 340px; max-width: none;
-            flex-shrink: 0;
+            flex: 1 1 auto; width: auto; max-width: none; min-width: 340px;
             transform: none; transition: none;
             box-shadow: none;
         }
+        /* Preview column grows with the window; its content stays phone-sized and centered */
+        #preview-panel { max-width: 440px; margin: 0 auto; width: 100%; }
     }
     .panel-right-backdrop {
         position: fixed; inset: 0;
@@ -56,7 +57,7 @@
     }
     .acct-pill:hover { border-color: #D6D3D1; background: #FAFAF9; }
     .acct-pill.selected {
-        border-color: #1a3a8f; background: #f0f4fc;
+        border-color: #2563EB; background: #EFF4FF;
         box-shadow: 0 0 0 3px rgba(26, 58, 143,0.08);
     }
     .acct-pill .checkmark {
@@ -66,7 +67,7 @@
         transition: all 150ms ease;
     }
     .acct-pill.selected .checkmark {
-        background: #1a3a8f; border-color: #1a3a8f;
+        background: #2563EB; border-color: #2563EB;
     }
     .acct-pill.selected .checkmark svg { display: block; }
     .acct-pill .checkmark svg { display: none; }
@@ -112,7 +113,7 @@
     }
     .caption-wrap:hover { border-color: #D6D3D1; }
     .caption-wrap:focus-within {
-        border-color: #1a3a8f;
+        border-color: #2563EB;
         box-shadow: 0 0 0 3px rgba(26, 58, 143,0.1);
     }
     .caption-editor {
@@ -145,7 +146,7 @@
     .comment-editor::placeholder { color: #A8A29E; }
     .comment-editor:hover { border-color: #D6D3D1; }
     .comment-editor:focus {
-        border-color: #1a3a8f;
+        border-color: #2563EB;
         box-shadow: 0 0 0 3px rgba(26, 58, 143,0.1);
     }
 
@@ -164,8 +165,8 @@
     }
     .media-dropzone-inline:hover,
     .media-dropzone-inline.dragover {
-        border-color: #1a3a8f;
-        background: #f0f4fc;
+        border-color: #2563EB;
+        background: #EFF4FF;
     }
 
     /* Unsplash icon button next to the dropzone - bare logo mark, no tile */
@@ -293,22 +294,24 @@
     .panel-scroll::-webkit-scrollbar-thumb:hover { background: #A8A29E; }
 
     /* ═══ v3 layout: Editor column (left) + Preview (right), capped & centered ═══ */
-    .cmp-panels { max-width: 1040px; width: 100%; margin: 0 auto; }
+    .cmp-panels { width: 100%; }
     .cmp-body { display: flex; flex: 1; min-height: 0; }
     .cmp-content { flex: 1; min-width: 0; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
 
     /* Cards with icon headers (ActiveCampaign-style hierarchy) */
     .cmp-card { background: #FFFFFF; border: 1px solid #E6E3DF; border-radius: 12px; box-shadow: 0 1px 2px rgba(26,25,23,0.04); }
-    .cmp-card-head { display: flex; align-items: center; gap: 8px; padding: 11px 14px 9px; }
-    .cmp-card-head .ic { width: 26px; height: 26px; border-radius: 7px; background: #EEF2FB; color: #1E3A8A; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .cmp-card-head h3 { font-size: 13.5px; font-weight: 700; margin: 0; letter-spacing: -0.01em; color: #1A1917; }
+    .cmp-card-head { display: flex; align-items: center; gap: 9px; padding: 11px 15px 9px; }
+    .cmp-card-head .ic { width: 26px; height: 26px; border-radius: 7px; background: #EFF4FF; color: #2563EB; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cmp-card-head h3 { font-size: 14px; font-weight: 700; margin: 0; letter-spacing: -0.015em; color: #1A1917; }
     .cmp-card-head .sub { font-size: 11px; color: #A09A91; margin-left: auto; font-weight: 500; }
-    .cmp-card-body { padding: 0 14px 14px; }
+    .cmp-card-body { padding: 0 15px 14px; }
+    /* Clean form focus (blue ring) for inputs inside the composer */
+    .cmp-content .form-datetime:focus, .cmp-content select:focus { box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
 
     /* Segmented format control */
     .seg { display: inline-flex; background: #F3F2F0; border-radius: 7px; padding: 2px; gap: 2px; flex-shrink: 0; }
     .seg button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; color: #A09A91; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 120ms; }
-    .seg button[aria-pressed="true"] { background: #FFFFFF; color: #1E3A8A; box-shadow: 0 1px 2px rgba(26,25,23,0.08); }
+    .seg button[aria-pressed="true"] { background: #FFFFFF; color: #2563EB; box-shadow: 0 1px 2px rgba(26,25,23,0.08); }
 
     /* Format rows (compact) */
     .fmt-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; }
@@ -321,11 +324,14 @@
 
     /* Rail cards */
     .cmp-rail-card { background: #FFFFFF; border: 1px solid #E6E3DF; border-radius: 12px; box-shadow: 0 1px 2px rgba(26,25,23,0.04); }
-    .rail-prev { font-size: 11px; color: #5C564F; margin-top: 9px; line-height: 1.45; padding: 8px 10px; background: #EEF2FB; border-radius: 8px; }
-    .rail-prev b { color: #1E3A8A; font-weight: 600; }
+    .rail-prev { font-size: 11px; color: #5C564F; margin-top: 9px; line-height: 1.45; padding: 8px 10px; background: #EFF4FF; border-radius: 8px; }
+    .rail-prev b { color: #2563EB; font-weight: 600; }
+    /* Serie integrada en la tarjeta de programación */
+    .rpt-block { margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0EEEB; }
+    .rpt-label { font-size: 11px; font-weight: 600; color: #A09A91; margin-bottom: 7px; }
     .wk-row { display: flex; gap: 4px; }
     .wk-row .repeat-day { flex: 1; text-align: center; font-size: 11.5px; font-weight: 600; padding: 6px 0; border-radius: 6px; border: 1px solid #E6E3DF; background: #FFFFFF; color: #5C564F; cursor: pointer; user-select: none; }
-    .wk-row .repeat-day.bg-orange-500 { background: #1E3A8A !important; color: #fff !important; border-color: #1E3A8A !important; }
+    .wk-row .repeat-day.bg-orange-500 { background: #2563EB !important; color: #fff !important; border-color: #2563EB !important; }
 
     /* Collapsible internal details */
     .details-head { display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; }
@@ -334,13 +340,18 @@
     .details-head .chev { margin-left: auto; color: #A09A91; transition: transform 150ms; }
     .details-head.open .chev { transform: rotate(180deg); }
 
-    /* Action bar primary/secondary */
-    .btn-pri { font-size: 13.5px; font-weight: 700; color: #fff; background: #1E3A8A; border: 0; cursor: pointer; padding: 9px 20px; border-radius: 9px; letter-spacing: -0.01em; transition: background 120ms; }
-    .btn-pri:hover { background: #15285f; }
+    /* Action bar: tertiary text · neutral secondary · one vivid-blue primary */
+    .btn-pri { font-size: 13.5px; font-weight: 700; color: #fff; background: #2563EB; border: 0; cursor: pointer; padding: 9px 24px; border-radius: 9px; letter-spacing: -0.01em; transition: background 120ms; box-shadow: 0 1px 2px rgba(37,99,235,0.25); }
+    .btn-pri:hover { background: #1D4ED8; }
     .btn-pri:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-sec { font-size: 12.5px; font-weight: 600; color: #1E3A8A; background: transparent; border: 1.5px solid #1E3A8A; cursor: pointer; padding: 7px 14px; border-radius: 8px; }
-    .btn-sec:hover { background: #EEF2FB; }
+    .btn-sec { font-size: 13px; font-weight: 600; color: #1A1917; background: #FFFFFF; border: 1px solid #E6E3DF; cursor: pointer; padding: 8px 16px; border-radius: 9px; box-shadow: 0 1px 2px rgba(26,25,23,0.04); }
+    .btn-sec:hover { border-color: #A09A91; background: #F3F2F0; }
     .btn-sec:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* ¿Cuándo? segmented control */
+    .when-seg { display: inline-flex; background: #F3F2F0; border-radius: 7px; padding: 2px; gap: 2px; margin-bottom: 11px; }
+    .when-seg button { border: 0; background: transparent; font-size: 12px; font-weight: 600; color: #A09A91; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-family: inherit; }
+    .when-seg button[aria-pressed="true"] { background: #FFFFFF; color: #2563EB; box-shadow: 0 1px 2px rgba(26,25,23,0.08); }
+    .when-note { font-size: 12px; color: #5C564F; line-height: 1.5; }
 </style>
 {% endblock %}
 
@@ -645,66 +656,84 @@
                 </div><!-- /Contenido card -->
 
                 {% if not post_is_readonly %}
-                <!-- Programación (debajo del contenido) -->
+                <!-- ¿Cuándo se publica? (debajo del contenido) -->
                 <div class="cmp-card">
                     <div class="cmp-card-head">
                         <span class="ic"><svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></span>
-                        <h3>Programación</h3>
-                        <span class="sub">{{ workspace.effective_timezone }}</span>
+                        <h3>¿Cuándo se publica?</h3>
+                        <span class="sub" x-show="publishMode === 'schedule'">{{ workspace.effective_timezone }}</span>
                     </div>
                     <div class="cmp-card-body">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <input type="date" name="scheduled_date" class="form-datetime" style="width:auto" value="{{ form.scheduled_date.value|default:'' }}">
-                            <input type="time" name="scheduled_time" class="form-datetime" style="width:auto" value="{{ form.scheduled_time.value|default:'' }}">
-                            {% if not post or not post.series_id %}
-                            <label class="flex items-center gap-2 text-xs font-semibold text-stone-600 cursor-pointer ml-auto">
-                                <input type="checkbox" name="repeat_enabled" value="1" id="repeat-enabled" class="accent-[#1E3A8A] w-[15px] h-[15px]" {% if series_config %}checked{% endif %}>
-                                Repetir en una serie
-                            </label>
+                        <div class="when-seg">
+                            <button type="button" :aria-pressed="publishMode === 'schedule'" @click="publishMode = 'schedule'">En una fecha</button>
+                            {% if can_publish %}
+                            <button type="button" :aria-pressed="publishMode === 'publish_now'" @click="publishMode = 'publish_now'">Ahora</button>
                             {% endif %}
+                            <button type="button" :aria-pressed="publishMode === 'add_to_queue'" @click="publishMode = 'add_to_queue'">En la cola</button>
                         </div>
-                        <div id="schedule-error" class="hidden text-xs text-red-500 mt-1.5"></div>
 
-                        {% if post and post.series_id %}
-                        <div class="rounded-lg bg-violet-50 border border-violet-100 px-3 py-2 text-xs text-violet-700 mt-3">
-                            Esta publicación es parte de una serie
-                            {% if series_future_count %}con <strong>{{ series_future_count }}</strong> repetición{{ series_future_count|pluralize:",es" }} por salir.{% else %}(sin repeticiones pendientes).{% endif %}
-                            {% if series_future_count %}
-                            <button type="button"
-                                    hx-post="{% url 'composer:cancel_series' workspace_id=workspace.id post_id=post.id %}"
-                                    hx-confirm="¿Eliminar las {{ series_future_count }} repeticiones futuras? Esta publicación no se toca."
-                                    hx-swap="none"
-                                    class="block mt-1 font-semibold text-red-600 hover:underline cursor-pointer">Cancelar repeticiones futuras</button>
-                            {% endif %}
-                        </div>
-                        {% else %}
-                        <div id="series-box" class="mt-3 pt-3 border-t border-stone-100" data-config='{{ series_config_json }}'>
-                            <div id="repeat-fields" class="{% if not series_config %}hidden{% endif %}">
-                                <div class="wk-row" id="repeat-days">
-                                    {% for n, label in repeat_days %}
-                                    <label class="repeat-day" data-day="{{ n }}">
-                                        <input type="checkbox" name="repeat_weekdays" value="{{ n }}" class="sr-only" {% if series_config and n in series_config.weekdays %}checked{% endif %}>{{ label }}
-                                    </label>
-                                    {% endfor %}
-                                </div>
-                                <div class="flex flex-wrap items-center gap-2 text-xs text-stone-500 mt-2.5">
-                                    Durante
-                                    <input type="number" min="1" max="52" name="repeat_count" id="repeat-count" class="form-datetime" style="width:3.5rem" value="{% if series_config %}{{ series_config.count }}{% else %}4{% endif %}">
-                                    <select name="repeat_unit" id="repeat-unit" class="form-datetime" style="width:auto">
-                                        <option value="weeks" {% if series_config.unit != 'months' %}selected{% endif %}>semanas</option>
-                                        <option value="months" {% if series_config.unit == 'months' %}selected{% endif %}>meses</option>
-                                    </select>
-                                    <span id="repeat-preview" class="rail-prev" style="margin-top:0; flex:1 1 100%"></span>
+                        <!-- En una fecha -->
+                        <div x-show="publishMode === 'schedule'">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <input type="date" name="scheduled_date" class="form-datetime" style="width:auto" value="{{ form.scheduled_date.value|default:'' }}">
+                                <input type="time" name="scheduled_time" class="form-datetime" style="width:auto" value="{{ form.scheduled_time.value|default:'' }}">
+                                {% if not post or not post.series_id %}
+                                <label class="flex items-center gap-2 text-xs font-semibold text-stone-600 cursor-pointer ml-auto">
+                                    <input type="checkbox" name="repeat_enabled" value="1" id="repeat-enabled" class="accent-[#2563EB] w-[15px] h-[15px]" {% if series_config %}checked{% endif %}>
+                                    Repetir
+                                </label>
+                                {% endif %}
+                            </div>
+                            <div id="schedule-error" class="hidden text-xs text-red-500 mt-1.5"></div>
+
+                            {% if post and post.series_id %}
+                            <div class="rounded-lg bg-violet-50 border border-violet-100 px-3 py-2 text-xs text-violet-700 mt-3">
+                                Esta publicación es parte de una serie
+                                {% if series_future_count %}con <strong>{{ series_future_count }}</strong> repetición{{ series_future_count|pluralize:",es" }} por salir.{% else %}(sin repeticiones pendientes).{% endif %}
+                                {% if series_future_count %}
+                                <button type="button"
+                                        hx-post="{% url 'composer:cancel_series' workspace_id=workspace.id post_id=post.id %}"
+                                        hx-confirm="¿Eliminar las {{ series_future_count }} repeticiones futuras? Esta publicación no se toca."
+                                        hx-swap="none"
+                                        class="block mt-1 font-semibold text-red-600 hover:underline cursor-pointer">Cancelar repeticiones futuras</button>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div id="series-box" data-config='{{ series_config_json }}'>
+                                <div id="repeat-fields" class="rpt-block {% if not series_config %}hidden{% endif %}">
+                                    <div class="rpt-label">Se repite los días</div>
+                                    <div class="wk-row" id="repeat-days">
+                                        {% for n, label in repeat_days %}
+                                        <label class="repeat-day" data-day="{{ n }}">
+                                            <input type="checkbox" name="repeat_weekdays" value="{{ n }}" class="sr-only" {% if series_config and n in series_config.weekdays %}checked{% endif %}>{{ label }}
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2 text-xs text-stone-500 mt-2.5">
+                                        Durante
+                                        <input type="number" min="1" max="52" name="repeat_count" id="repeat-count" class="form-datetime" style="width:3.5rem" value="{% if series_config %}{{ series_config.count }}{% else %}4{% endif %}">
+                                        <select name="repeat_unit" id="repeat-unit" class="form-datetime" style="width:auto">
+                                            <option value="weeks" {% if series_config.unit != 'months' %}selected{% endif %}>semanas</option>
+                                            <option value="months" {% if series_config.unit == 'months' %}selected{% endif %}>meses</option>
+                                        </select>
+                                    </div>
+                                    <div id="repeat-preview" class="rail-prev"></div>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
+
+                        <!-- Ahora / En la cola -->
+                        {% if can_publish %}
+                        <p x-show="publishMode === 'publish_now'" class="when-note">Se publica apenas toques el botón, en todas las cuentas seleccionadas.</p>
                         {% endif %}
+                        <p x-show="publishMode === 'add_to_queue'" class="when-note">Se agrega al próximo horario libre de tu cola.</p>
                     </div>
                 </div>
                 {% endif %}
 
                 <!-- Formato por cuenta (Facebook / Instagram): card con control segmentado -->
-                <div x-show="hasMediaAttached && selectedAccounts.some(id => ['facebook', 'instagram', 'instagram_login'].includes(charLimits[id]?.platform))"
+                <div x-show="selectedAccounts.some(id => ['facebook', 'instagram', 'instagram_login'].includes(charLimits[id]?.platform))"
                      x-cloak
                      class="cmp-card">
                     <div class="cmp-card-head">
@@ -715,7 +744,7 @@
 
                     <!-- Facebook rows (compact) -->
                     <template x-for="accId in selectedAccounts" :key="'facebook-video-settings-' + accId">
-                        <div x-show="charLimits[accId]?.platform === 'facebook' && hasMediaAttached"
+                        <div x-show="charLimits[accId]?.platform === 'facebook'"
                              x-data="{ facebookPostType: platformExtras[accId]?.post_type || 'video' }"
                              class="fmt-row-wrap">
                             <input type="hidden" :name="'facebook_panel_' + accId" value="1"
@@ -748,7 +777,7 @@
 
                     <!-- Instagram rows (segmented) -->
                     <template x-for="accId in selectedAccounts" :key="'instagram-cover-' + accId">
-                        <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform) && hasMediaAttached"
+                        <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)"
                              x-data="{ igPostType: platformExtras[accId]?.post_type === 'story' ? 'story' : '' }"
                              class="fmt-row-wrap">
                             <input type="hidden" :name="'ig_panel_' + accId" value="1"
@@ -1626,42 +1655,13 @@
                 {% endif %}
 
                 {% if not post_is_readonly %}
-                <!-- Primary = Programar (reads the rail's date/time). Secondary menu for now/queue. -->
-                <div class="relative inline-flex flex-shrink-0 items-center gap-0" id="publish-anchor"
-                     x-data="{ moreOpen: false }" @click.outside="moreOpen = false">
-                    <button type="submit" id="publish-schedule-submit" name="action" value="schedule"
-                            :disabled="selectedAccounts.length === 0"
-                            class="btn-pri" style="border-radius: 9px 0 0 9px">
-                        Programar
-                    </button>
-                    <button type="button" @click="moreOpen = !moreOpen"
-                            :disabled="selectedAccounts.length === 0"
-                            class="btn-pri px-2.5"
-                            style="border-radius: 0 9px 9px 0; border-left: 1px solid rgba(255,255,255,0.25)"
-                            :class="selectedAccounts.length === 0 && 'opacity-50 cursor-not-allowed'"
-                            aria-label="Más opciones de publicación">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-
-                    <div x-show="moreOpen" x-cloak x-transition
-                         class="absolute bottom-full right-0 mb-2 w-60 bg-white rounded-xl shadow-xl border border-stone-200/80 p-1.5" style="z-index: 50;">
-                        <button type="submit" name="action" value="publish_now"
-                                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-stone-50 text-left cursor-pointer">
-                            <span class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/></svg></span>
-                            <span class="text-[13px] font-semibold text-stone-800">Publicar ahora</span>
-                        </button>
-                        <button type="submit" name="action" value="add_to_queue"
-                                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-stone-50 text-left cursor-pointer">
-                            <span class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
-                            <span class="text-[13px] font-semibold text-stone-800">Próximo horario disponible</span>
-                        </button>
-                        <button type="submit" name="action" value="add_to_queue_priority"
-                                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-stone-50 text-left cursor-pointer">
-                            <span class="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg></span>
-                            <span class="text-[13px] font-semibold text-stone-800">Priorizar en la cola</span>
-                        </button>
-                    </div>
-                </div>
+                <!-- Single primary: its action follows the "¿Cuándo?" choice above -->
+                <button type="submit" id="publish-primary" name="action" :value="publishMode"
+                        :disabled="selectedAccounts.length === 0"
+                        class="btn-pri flex-shrink-0"
+                        x-text="publishMode === 'publish_now' ? 'Publicar ahora' : (publishMode === 'add_to_queue' ? 'Agregar a la cola' : 'Programar')">
+                    Programar
+                </button>
 
                 <!-- Hidden fields for queue actions -->
                 <input type="hidden" name="queue_id" value="">
@@ -1708,7 +1708,7 @@
 
             <!-- Reviewer feedback to address (latest changes-requested / rejected comment) -->
             {% if show_resubmit_button and latest_feedback %}
-            <div class="flex gap-3 p-4 rounded-xl mb-3" style="background:#f0f4fc;border:1px solid #c3d0f0;">
+            <div class="flex gap-3 p-4 rounded-xl mb-3" style="background:#EFF4FF;border:1px solid #c3d0f0;">
                 <span class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style="background: var(--primary);">{{ latest_feedback.user.display_name|default:"?"|make_list|first|upper }}</span>
                 <div class="min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
@@ -2169,6 +2169,8 @@ function composerApp() {
         title: '{{ form.title.value|default:""|escapejs }}',
         caption: '{{ form.caption.value|default:""|escapejs }}',
         selectedAccounts: JSON.parse(document.getElementById('composer-selected-accounts').textContent),
+        // How to publish, chosen in the "¿Cuándo se publica?" card: schedule | publish_now | add_to_queue
+        publishMode: 'schedule',
         charLimits: JSON.parse(document.getElementById('composer-char-limits').textContent),
         overrides: {},
         advancedOpen: {},
@@ -3141,11 +3143,12 @@ function composerApp() {
         render();
     })();
 
-    // "Programar" validates the rail's date/time before submitting. The server
-    // re-checks (future-time), this just gives instant feedback.
-    var scheduleSubmit = document.getElementById('publish-schedule-submit');
-    if (scheduleSubmit) {
-        scheduleSubmit.addEventListener('click', function(e) {
+    // The primary button validates the date/time only when "En una fecha" is chosen.
+    // Its value is bound to publishMode (schedule / publish_now / add_to_queue).
+    var primaryBtn = document.getElementById('publish-primary');
+    if (primaryBtn) {
+        primaryBtn.addEventListener('click', function(e) {
+            if (e.target.closest('button').value !== 'schedule') return;
             var errEl = document.getElementById('schedule-error');
             var dateVal = (document.querySelector('input[name="scheduled_date"]') || {}).value;
             var timeVal = (document.querySelector('input[name="scheduled_time"]') || {}).value;
