@@ -1747,6 +1747,20 @@ def preview(request, workspace_id):
                     }
                 )
 
+    # Aspect ratio of the media frame per preview, so a Reel/Story shows 9:16
+    # instead of the default square/landscape. Driven by the chosen format.
+    single_video = len(media_items) == 1 and media_items[0].get("is_video")
+    for p in previews:
+        plat = p["account"].platform
+        aspect = None
+        if plat == "facebook":
+            pt = request.POST.get(f"facebook_post_type_{p['account'].id}", "video")
+            aspect = "9 / 16" if pt in ("reel", "story") else ("16 / 9" if single_video else "1 / 1")
+        elif plat in ("instagram", "instagram_login"):
+            pt = request.POST.get(f"ig_post_type_{p['account'].id}", "")
+            aspect = "9 / 16" if (pt == "story" or single_video) else "4 / 5"
+        p["aspect"] = aspect
+
     return render(
         request,
         "composer/partials/preview_panel.html",
