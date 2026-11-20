@@ -8,7 +8,9 @@
   /* Dos bandas a ancho completo. El <main> es blanco y tiene padding
      (p-3 / sm:p-4 / lg:p-6); las bandas lo anulan con margen negativo en los
      cuatro lados para llegar a los bordes, y reponen su propio padding. */
-  .ov-band{margin-left:-0.75rem;margin-right:-0.75rem;padding-left:0.75rem;padding-right:0.75rem;}
+  /* flex-shrink:0 — el <main> es flex-col; sin esto el min-height del body
+     comprime el hero y corta las efemerides. */
+  .ov-band{margin-left:-0.75rem;margin-right:-0.75rem;padding-left:0.75rem;padding-right:0.75rem;flex-shrink:0;}
   .ov-hero{margin-top:-0.75rem;padding-top:0.75rem;}
   @media (min-width:640px){.ov-band{margin-left:-1rem;margin-right:-1rem;padding-left:1rem;padding-right:1rem;}.ov-hero{margin-top:-1rem;padding-top:1rem;}}
   @media (min-width:1024px){.ov-band{margin-left:-1.5rem;margin-right:-1.5rem;padding-left:1.5rem;padding-right:1.5rem;}.ov-hero{margin-top:-1.5rem;padding-top:1.5rem;}}
@@ -22,12 +24,12 @@
     position:relative; overflow:hidden;
   }
   .ov-hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1px);background-size:22px 22px;opacity:.5;pointer-events:none;}
-  .ov-hero-wrap{max-width:1120px;margin:0 auto;padding:40px 28px 32px;position:relative;z-index:1;}
+  .ov-hero-wrap{max-width:1120px;margin:0 auto;padding:40px 28px 36px;position:relative;z-index:1;}
   .ov-hero h1{font-family:var(--font-display);font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.02;margin:0 0 8px;color:#fff;text-wrap:balance;}
   .ov-hero p{font-size:14.5px;color:rgba(255,255,255,.85);margin:0;max-width:640px;line-height:1.55;}
 
-  /* Zona de trabajo gris */
-  .ov-body{background:var(--neutral-100,#F5F5F4);min-height:60vh;}
+  /* Zona de trabajo gris — flex:1 para llenar el resto sin comprimir el hero. */
+  .ov-body{background:var(--neutral-100,#F5F5F4);flex:1 0 auto;}
   .ov-wrap{max-width:1120px;margin:0 auto;padding:28px 28px 64px;}
 
   .ov-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-ghost);margin:0 0 12px;}
