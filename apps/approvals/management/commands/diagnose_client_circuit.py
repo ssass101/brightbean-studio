@@ -89,7 +89,18 @@ class Command(BaseCommand):
             estados = ", ".join(f"{plat}:{st}" for plat, st in rows) or "(sin platform posts)"
             snippet = (p.caption or "")[:40]
             flag = " ← EN PORTAL" if n_pc else ""
+            # Media adjunta al post (lo que el portal del cliente debería mostrar)
+            media = list(p.media_attachments.select_related("media_asset").all())
+            if media:
+                media_desc = "; ".join(
+                    f"{pm.media_asset.media_type}(file={'sí' if pm.media_asset.file else 'NO'},"
+                    f"thumb={'sí' if pm.media_asset.thumbnail else 'no'})"
+                    for pm in media
+                )
+            else:
+                media_desc = "SIN MEDIA adjunta al Post"
             self.stdout.write(f'  - "{snippet}" → {estados}{flag}')
+            self.stdout.write(f"      media: {media_desc}")
 
         self.stdout.write(
             self.style.MIGRATE_HEADING(

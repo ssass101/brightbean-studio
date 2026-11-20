@@ -122,10 +122,18 @@ def submit_for_review(target, user, workspace):
     # TEMP diagnóstico: qué estados tienen los children y cuántos son elegibles.
     try:
         _all = [(pp.social_account.platform, pp.status) for pp in post.platform_posts.all()]
+        _media = post.media_attachments.count()
+        _media_detail = [
+            (pm.media_asset.media_type, bool(pm.media_asset.file), bool(pm.media_asset.thumbnail))
+            for pm in post.media_attachments.select_related("media_asset").all()
+        ]
         logger.warning(
-            "[APPROVAL-DIAG] submit_for_review post=%s mode=%r all_children=%r eligible=%d can_approve=%r",
+            "[APPROVAL-DIAG] submit_for_review post=%s mode=%r caption_len=%d media_count=%d media=%r children=%r eligible=%d can_approve=%r",
             post.id,
             workspace.approval_workflow_mode,
+            len(post.caption or ""),
+            _media,
+            _media_detail,
             _all,
             len(targets),
             _can_approve_internally(workspace, user),
