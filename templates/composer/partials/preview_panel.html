@@ -9,9 +9,7 @@ Context: previews (list of dicts with account, title, caption, first_comment, ch
     const _igIdx = _platforms.findIndex(p => p === 'instagram' || p === 'instagram_login');
     if (_igIdx >= 0) activePreview = _igIdx;
 ">
-    {# Barra de pestañas: plataformas (Facebook / Instagram…) + la pestaña Grid.
-       Se muestra si hay más de una plataforma O si existe grid de Instagram
-       disponible (así Grid convive con las plataformas, sin selector suelto). #}
+    {% comment %}Barra de pestañas: plataformas (Facebook, Instagram...) + la pestaña Grid. Se muestra si hay mas de una plataforma O si existe grid de Instagram disponible, para que Grid conviva con las plataformas sin selector suelto.{% endcomment %}
     <div x-show="{% if previews|length > 1 %}true{% else %}false{% endif %} || instagramGridAccountId"
          class="flex gap-1 px-3 py-2 border-b" style="border-color: #E7E5E4;">
         {% for p in previews %}
