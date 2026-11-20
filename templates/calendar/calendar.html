@@ -83,8 +83,9 @@
     /* Status colors */
     .status-draft      { background: #F5F5F4; color: #57534E; border: 1px solid #E7E5E4; }
     .status-draft .chip-dot { background: #A8A29E; }
-    .status-pending_review, .status-pending_client { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
-    .status-pending_review .chip-dot, .status-pending_client .chip-dot { background: #2563EB; }
+    /* Pendientes de aprobación: punteado + ámbar tenue, claramente distintos del programado */
+    .status-pending_review, .status-pending_client { background: #FFFBEB; color: #92400E; border: 1px dashed #FDE68A; }
+    .status-pending_review .chip-dot, .status-pending_client .chip-dot { background: #F59E0B; }
     .status-scheduled  { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
     .status-scheduled .chip-dot { background: #3B82F6; }
     .status-published  { background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; }

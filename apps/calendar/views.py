@@ -230,7 +230,10 @@ def _get_filtered_platform_posts(workspace, request):
         # would fire its own media_attachments + media_asset queries (N+1) on
         # every month/week/day render.
         .prefetch_related("post__media_attachments__media_asset")
-        .annotate(effective_at=Coalesce("scheduled_at", "post__scheduled_at"))
+        # A post in the approval flow has no committed scheduled_at yet, only a
+        # proposed date — fall back to it so pending posts still land on the
+        # calendar (at their proposed day) instead of vanishing.
+        .annotate(effective_at=Coalesce("scheduled_at", "post__scheduled_at", "post__proposed_publish_at"))
     )
 
     # Status filter — editorial status now lives on the PlatformPost itself,

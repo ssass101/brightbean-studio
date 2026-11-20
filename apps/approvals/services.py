@@ -74,6 +74,26 @@ def _record_action(post, platform_post, user, action, comment=""):
     )
 
 
+def _record_feedback_comment(post, user, comment):
+    """Mirror an approval comment (reject / request-changes / hold) as a visible
+    PostComment so the team and the client actually see the reason.
+
+    The ApprovalAction stores the comment for the audit trail, but every UI
+    (the approvals tab, the client portal) reads PostComment. Without this the
+    client's reason went nowhere visible.
+    """
+    if not comment or not comment.strip():
+        return
+    from .models import PostComment
+
+    PostComment.objects.create(
+        post=post,
+        author=user,
+        body=comment.strip(),
+        visibility=PostComment.Visibility.EXTERNAL,
+    )
+
+
 def _notify_reviewers(workspace, actor, *, post, event_type, title, body):
     """Notify the internal team members with ``approve_posts`` (except the actor).
 
@@ -217,8 +237,8 @@ def approve_post(target, user, workspace, comment=""):
                 "Elige una fecha nueva para programarla."
             )
         else:
-            title = "Post approved"
-            body = f'Your post "{post.caption_snippet}" was approved by {user.display_name}.'
+            title = "Publicación aprobada"
+            body = f'{user.display_name} aprobó tu publicación: "{post.caption_snippet}".'
         notify(
             user=post.author,
             event_type=EventType.POST_APPROVED,
@@ -291,13 +311,14 @@ def request_changes(target, user, workspace, comment):
         else:
             for pp in moved:
                 _record_action(post, pp, user, ApprovalAction.ActionType.CHANGES_REQUESTED, comment)
+        _record_feedback_comment(post, user, comment)
 
     if post.author and post.author != user:
         notify(
             user=post.author,
             event_type=EventType.POST_CHANGES_REQUESTED,
-            title="Changes requested on your post",
-            body=f'{user.display_name} requested changes: "{comment[:100]}"',
+            title="Te pidieron cambios en una publicación",
+            body=f'{user.display_name} pidió cambios: "{comment[:100]}"',
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),
@@ -327,13 +348,14 @@ def reject_post(target, user, workspace, comment):
         else:
             for pp in moved:
                 _record_action(post, pp, user, ApprovalAction.ActionType.REJECTED, comment)
+        _record_feedback_comment(post, user, comment)
 
     if post.author and post.author != user:
         notify(
             user=post.author,
             event_type=EventType.POST_REJECTED,
-            title="Post rejected",
-            body=f'{user.display_name} rejected your post: "{comment[:100]}"',
+            title="Publicación rechazada",
+            body=f'{user.display_name} rechazó tu publicación: "{comment[:100]}"',
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),
@@ -368,6 +390,7 @@ def request_hold(target, user, workspace, comment):
         else:
             for pp in moved:
                 _record_action(post, pp, user, ApprovalAction.ActionType.HELD, comment)
+        _record_feedback_comment(post, user, comment)
 
     _notify_reviewers_of_hold(post, workspace, user, comment)
     return post
