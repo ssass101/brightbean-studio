@@ -207,15 +207,15 @@ body {
 }
 .sidebar-collapsed .sidebar-nav-item.active::before { display: none; }
 
-/* ── Panel de canales (variante C) ── */
+/* ── Panel de canales / conectar (variante C) ── */
 .sidebar-chan-panel {
-  margin: 14px 12px 0;
+  margin: 20px 12px 0;
   background: var(--surface-1);
   border: 1px solid var(--border-soft, #EEF0F2);
   border-radius: 12px;
   padding: 6px;
 }
-.sidebar-collapsed .sidebar-chan-panel { margin: 10px 4px 0; padding: 4px; background: transparent; border: none; }
+.sidebar-collapsed .sidebar-chan-panel { margin: 12px 4px 0; padding: 4px; background: transparent; border: none; }
 .sidebar-chan-head {
   display: flex;
   align-items: center;
@@ -265,6 +265,22 @@ body {
 .sidebar-chan-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .sidebar-chan-dot.ok { background: #22C55E; }
 .sidebar-chan-dot.empty { background: var(--neutral-300); }
+
+/* Filas de "conectar" dentro de su panel: más livianas, sin tarjeta blanca */
+.sidebar-connect-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background var(--dur-fast) ease;
+}
+.sidebar-connect-row:hover { background: rgba(0, 0, 0, 0.04); color: var(--text-primary); }
+.sidebar-collapsed .sidebar-connect-row { justify-content: center; padding: 6px; }
 .sidebar-section-label {
   font-size: 10px;
   font-weight: 700;
