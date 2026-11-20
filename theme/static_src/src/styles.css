@@ -30,30 +30,30 @@
 
 /* Tailwind: la paleta naranja apunta a la marca Canvas */
 @theme {
-  --color-orange-50:  #F0F4FC;
-  --color-orange-100: #E1E8F8;
-  --color-orange-200: #C3D0F0;
-  --color-orange-300: #93A8DE;
-  --color-orange-400: #5B7AC9;
-  --color-orange-500: #1A3A8F;
-  --color-orange-600: #153077;
-  --color-orange-700: #112761;
-  --color-orange-800: #0D1F4C;
-  --color-orange-900: #0A1738;
+  --color-orange-50:  #EFF6FF;
+  --color-orange-100: #DBEAFE;
+  --color-orange-200: #BFDBFE;
+  --color-orange-300: #93C5FD;
+  --color-orange-400: #60A5FA;
+  --color-orange-500: #2563EB;
+  --color-orange-600: #1D4ED8;
+  --color-orange-700: #1E40AF;
+  --color-orange-800: #1E3A8A;
+  --color-orange-900: #1E3B6E;
 }
 
 :root {
   /* Brand Tokens - Canvas Blue */
-  --brand-50:  #F0F4FC;
-  --brand-100: #E1E8F8;
-  --brand-200: #C3D0F0;
-  --brand-300: #93A8DE;
-  --brand-400: #5B7AC9;
-  --brand-500: #1A3A8F;
-  --brand-600: #153077;
-  --brand-700: #112761;
-  --brand-800: #0D1F4C;
-  --brand-900: #0A1738;
+  --brand-50:  #EFF6FF;
+  --brand-100: #DBEAFE;
+  --brand-200: #BFDBFE;
+  --brand-300: #93C5FD;
+  --brand-400: #60A5FA;
+  --brand-500: #2563EB;
+  --brand-600: #1D4ED8;
+  --brand-700: #1E40AF;
+  --brand-800: #1E3A8A;
+  --brand-900: #1E3B6E;
 
   /* Brand Tokens - BrightBean Green (the bean in the logo) — used for
      selection controls (checkboxes, toggle switches) */
@@ -129,7 +129,7 @@
   --shadow-md:  0 4px 6px rgba(23,20,18,0.06), 0 2px 4px rgba(23,20,18,0.04);
   --shadow-lg:  0 10px 15px rgba(23,20,18,0.08), 0 4px 6px rgba(23,20,18,0.04);
   --shadow-xl:  0 20px 25px rgba(23,20,18,0.08), 0 8px 10px rgba(23,20,18,0.04);
-  --shadow-primary: 0 4px 14px rgba(26,58,143,0.28);
+  --shadow-primary: 0 4px 14px rgba(37,99,235,0.28);
 
   /* Radii */
   --radius-sm:   0.25rem;
@@ -162,7 +162,7 @@ body {
 .auth-bg {
   background-color: var(--surface-1);
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(26,58,143,0.08), transparent),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37,99,235,0.08), transparent),
     radial-gradient(ellipse 60% 40% at 100% 100%, rgba(20,184,166,0.04), transparent);
 }
 
@@ -302,7 +302,7 @@ img.sidebar-logo-mark {
 .btn-primary-lift:hover {
   background: var(--primary-hover) !important;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(26,58,143,0.35);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.35);
 }
 
 .card-hover-lift {
@@ -372,7 +372,7 @@ img.sidebar-logo-mark {
   transition: background var(--dur-fast) ease;
 }
 .btn-primary-tint:hover {
-  background: rgba(var(--primary-rgb, 26, 58, 143), 0.2) !important;
+  background: rgba(var(--primary-rgb, 37, 99, 235), 0.2) !important;
 }
 
 .input-focus {
@@ -454,7 +454,7 @@ img.sidebar-logo-mark {
 .btn-brand:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(26,58,143,0.35);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.35);
 }
 .btn-brand:active {
   transform: translateY(0);
