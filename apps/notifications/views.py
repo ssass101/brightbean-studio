@@ -34,7 +34,10 @@ def notification_list(request):
     event_type = request.GET.get("event_type", "")
     read_status = request.GET.get("read_status", "")
 
-    qs = Notification.objects.filter(user=request.user)
+    # Los mensajes de redes (DMs, SLA) viven en Bandeja social, no en la
+    # campana — se excluyen para no duplicar.
+    INBOX_EVENTS = ["new_inbox_message", "inbox_sla_overdue"]
+    qs = Notification.objects.filter(user=request.user).exclude(event_type__in=INBOX_EVENTS)
 
     if event_type:
         qs = qs.filter(event_type=event_type)

@@ -114,9 +114,12 @@ def sidebar_context(request):
     try:
         from apps.notifications.models import Notification
 
-        sidebar_unread_notifications = Notification.objects.filter(
-            user=request.user, is_read=False
-        ).count()
+        # Los DMs/SLA de redes viven en Bandeja social; no se cuentan en la campana.
+        sidebar_unread_notifications = (
+            Notification.objects.filter(user=request.user, is_read=False)
+            .exclude(event_type__in=["new_inbox_message", "inbox_sla_overdue"])
+            .count()
+        )
     except Exception:
         sidebar_unread_notifications = 0
 
