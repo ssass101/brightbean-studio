@@ -1678,8 +1678,8 @@
         </form>
 
         {% if post and approval_history %}
-        <!-- Approval History & Comments -->
-        <div class="mt-4 border-t border-stone-200 pt-4">
+        <!-- Approval History & Comments (colapsable para no tapar el editor) -->
+        <div class="mt-4 border-t border-stone-200 pt-4" x-data="{ showDetail: false }">
             {% comment %}
             Un solo bloque de estado. Cuando hay feedback con comentario del
             revisor/cliente (cambios o rechazo), el aviso y el comentario van
@@ -1764,6 +1764,17 @@
             </div>
             {% endif %}
 
+            <!-- Toggle para abrir/cerrar el detalle (historial + comentarios) -->
+            <button type="button" @click="showDetail = !showDetail"
+                    class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-[12.5px] font-semibold text-stone-500 hover:bg-stone-50 transition-colors">
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg>
+                    Historial y comentarios
+                </span>
+                <svg class="w-4 h-4 text-stone-400 transition-transform" :class="showDetail && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+
+            <div x-show="showDetail" x-cloak x-collapse class="pt-3">
             <!-- Approval timeline (sin repetir el comentario destacado de arriba) -->
             <h4 class="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-3">Historial</h4>
             <div class="relative mb-5 pl-1">
@@ -1804,6 +1815,7 @@
                 {% include "approvals/partials/comment_form.html" with post=post workspace=workspace %}
             </div>
             {% endif %}
+            </div><!-- /showDetail -->
         </div>
         {% endif %}
 
