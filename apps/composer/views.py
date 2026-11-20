@@ -1099,6 +1099,16 @@ def save_post(request, workspace_id, post_id=None):
     workspace = _get_workspace(request, workspace_id)
     action = request.POST.get("action", "save_draft")
 
+    # TEMP diagnóstico circuito de aprobación: registra qué acción llega y el
+    # modo del workspace. Quitar una vez resuelto.
+    logger.warning(
+        "[APPROVAL-DIAG] save_post action=%r workspace_mode=%r post_id=%r all_actions=%r",
+        action,
+        workspace.approval_workflow_mode,
+        post_id,
+        request.POST.getlist("action"),
+    )
+
     if post_id:
         post = get_object_or_404(Post, id=post_id, workspace=workspace)
         # Enforce edit permissions: authors can edit their own, others need edit_others_posts

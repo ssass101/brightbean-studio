@@ -119,6 +119,20 @@ def submit_for_review(target, user, workspace):
         target, eligible_from_states={"draft", "changes_requested", "rejected"}
     )
 
+    # TEMP diagnóstico: qué estados tienen los children y cuántos son elegibles.
+    try:
+        _all = [(pp.social_account.platform, pp.status) for pp in post.platform_posts.all()]
+        logger.warning(
+            "[APPROVAL-DIAG] submit_for_review post=%s mode=%r all_children=%r eligible=%d can_approve=%r",
+            post.id,
+            workspace.approval_workflow_mode,
+            _all,
+            len(targets),
+            _can_approve_internally(workspace, user),
+        )
+    except Exception:
+        logger.exception("[APPROVAL-DIAG] log failed")
+
     moved = []
     with transaction.atomic():
         for pp in targets:
