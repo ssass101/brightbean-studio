@@ -14,8 +14,8 @@
     main:has(.composer-main) > div { overflow: hidden !important; }
     .composer-main { padding: 0 !important; overflow: hidden; }
 
-    /* Panels — editor capped, preview grows to fill (no empty side bands) */
-    .panel-center { flex: 1 1 0; min-width: 0; max-width: 660px; }
+    /* Panels — editor grows with the window (up to a comfortable max), preview fixed beside it */
+    .panel-center { flex: 1 1 auto; min-width: 0; max-width: 860px; }
     .panel-right  {
         /* Mobile: off-canvas drawer sliding in from the right */
         position: fixed; inset: 0 0 0 auto;
@@ -29,12 +29,13 @@
     @media (min-width: 1024px) {
         .panel-right {
             position: static; inset: auto;
-            flex: 1 1 auto; width: auto; max-width: none; min-width: 340px;
+            flex: 1 1 auto; width: auto; max-width: none; min-width: 360px;
             transform: none; transition: none;
             box-shadow: none;
         }
-        /* Preview column grows with the window; its content stays phone-sized and centered */
-        #preview-panel { max-width: 440px; margin: 0 auto; width: 100%; }
+        /* Preview sits right beside the editor; leftover width collects at the far edge, not between them */
+        #preview-panel { max-width: 460px; margin: 0; width: 100%; }
+        .panel-right > div:first-child { max-width: 460px; }
     }
     .panel-right-backdrop {
         position: fixed; inset: 0;
