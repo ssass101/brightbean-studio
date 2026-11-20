@@ -78,6 +78,29 @@ class Command(BaseCommand):
         for m in all_members:
             self.stdout.write(f"  - {m.user.email}: rol={m.workspace_role}")
 
+        # 3b) Para cada miembro: ¿el middleware lo confina al portal del cliente?
+        #     (es cliente-solo si NO es owner/admin de ORG y TODOS sus roles de
+        #     workspace son 'client'). Un owner mal confinado es el bug de
+        #     "clickeo el calendario y me manda al portal".
+        from apps.client_portal.middleware import client_only_workspace_ids
+        from apps.members.models import OrgMembership
+
+        self.stdout.write("\nConfinamiento al portal (quién queda atrapado en /portal/):")
+        for m in all_members:
+            u = m.user
+            org_roles = list(
+                OrgMembership.objects.filter(user=u).values_list("organization__name", "org_role")
+            )
+            ws_roles = list(
+                WorkspaceMembership.objects.filter(user=u, workspace__is_archived=False).values_list(
+                    "workspace__name", "workspace_role"
+                )
+            )
+            confined = client_only_workspace_ids(u)
+            flag = self.style.ERROR("CONFINADO AL PORTAL") if confined else self.style.SUCCESS("app completa")
+            self.stdout.write(f"  - {u.email}: [{flag}]")
+            self.stdout.write(f"      org_roles={org_roles}  ws_roles={ws_roles}")
+
         # 4) Posts recientes y estado de sus PlatformPosts
         posts = Post.objects.filter(workspace=ws).order_by("-created_at")[: opts["limit"]]
         self.stdout.write(f"\nÚltimos {len(posts)} posts:")
