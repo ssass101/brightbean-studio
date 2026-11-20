@@ -4,8 +4,31 @@ Context: previews (list of dicts with account, title, caption, first_comment, ch
 {% endcomment %}
 
 {% if previews %}
+<div x-data="{ activePreview: 0 }" x-init="
+    const _platforms = [{% for p in previews %}'{{ p.account.platform }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+    const _igIdx = _platforms.findIndex(p => p === 'instagram' || p === 'instagram_login');
+    if (_igIdx >= 0) activePreview = _igIdx;
+">
+    {% if previews|length > 1 %}
+    <!-- Platform selector tabs -->
+    <div class="flex gap-1 px-3 py-2 border-b" style="border-color: #E7E5E4;">
+        {% for p in previews %}
+        <button type="button"
+                @click="activePreview = {{ forloop.counter0 }}"
+                :class="activePreview === {{ forloop.counter0 }}
+                    ? 'bg-blue-50 text-blue-600 border-blue-200'
+                    : 'text-stone-400 border-transparent hover:bg-stone-50 hover:text-stone-600'"
+                class="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer">
+            {% include "partials/_platform_icon.html" with platform=p.account.platform size="sm" %}
+            {{ p.account.platform|title }}
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% for p in previews %}
-    <div class="preview-card" style="animation: slideUp 200ms {{ forloop.counter0|add:0 }}50ms cubic-bezier(0.16,1,0.3,1) both">
+    <div class="preview-card" x-show="activePreview === {{ forloop.counter0 }}" x-cloak
+         style="animation: slideUp 200ms cubic-bezier(0.16,1,0.3,1) both">
 
         <!-- Platform label + char badge -->
         <div class="px-3.5 py-2 border-b flex items-center gap-2" style="border-color: #E7E5E4;">
@@ -555,6 +578,7 @@ Context: previews (list of dicts with account, title, caption, first_comment, ch
         {% endif %}
     </div>
     {% endfor %}
+</div>{# /x-data activePreview #}
 
 {% else %}
     <!-- Empty preview state -->
