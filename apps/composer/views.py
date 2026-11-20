@@ -921,6 +921,10 @@ def compose(request, workspace_id, post_id=None):
         "is_edit": post is not None,
         "schedule_prefill_is_proposed": schedule_prefill_is_proposed,
         "post_is_scheduled": post_is_scheduled,
+        "series_config": (post.series_config if post else None) or None,
+        "repeat_days": [(0, "L"), (1, "M"), (2, "X"), (3, "J"), (4, "V"), (5, "S"), (6, "D")],
+        "series_config_json": json.dumps((post.series_config if post else None) or {}),
+        "series_future_count": _series_future_count(post),
         "post_is_readonly": post_is_readonly,
         "live_siblings": live_siblings,
         "categories": categories,
@@ -1027,6 +1031,26 @@ def _combine_schedule_dt(workspace, sched_date, sched_time):
 
     tz = zoneinfo.ZoneInfo(workspace.effective_timezone or "UTC")
     return datetime.combine(sched_date, sched_time).replace(tzinfo=tz)
+
+
+def _store_series_config(request, post):
+    """Persist the composer's "Repetir" fields on the post (until its series exists)."""
+    if post.series_id:
+        return
+    from apps.calendar.series import parse_series_config
+
+    config = parse_series_config(request.POST)
+    if config != (post.series_config or None):
+        post.series_config = config
+        post.save(update_fields=["series_config", "updated_at"])
+
+
+def _series_future_count(post):
+    if post is None or not post.series_id:
+        return 0
+    from apps.calendar.series import future_copies
+
+    return future_copies(post).count()
 
 
 def _capture_proposed_publish_at(post, post_id, workspace, form, *, clear_when_blank=True):
@@ -1226,6 +1250,7 @@ def save_post(request, workspace_id, post_id=None):
         # Save post first so it has a PK, then delegate to approval service
         _capture_proposed_publish_at(post, post_id, workspace, form, clear_when_blank=False)
         post.save()
+        _store_series_config(request, post)
         # Sync platform posts before submitting
         _sync_platform_posts(request, post, workspace, initial_status="draft")
         _save_version(post, request.user)
@@ -1254,6 +1279,7 @@ def save_post(request, workspace_id, post_id=None):
         # Resubmit after changes requested or rejection
         _capture_proposed_publish_at(post, post_id, workspace, form, clear_when_blank=False)
         post.save()
+        _store_series_config(request, post)
         _sync_platform_posts(request, post, workspace, initial_status="draft")
         _save_version(post, request.user)
         from apps.approvals.services import resubmit_post
@@ -1365,6 +1391,14 @@ def save_post(request, workspace_id, post_id=None):
         else:
             target_only = scoped_ids
         _transition_post_children(post, pending_target, only=target_only)
+
+    # Repeat series: remember the chosen weekdays; when the post is now
+    # scheduled, create the copies (approval of the original covers them).
+    _store_series_config(request, post)
+    if action == "schedule":
+        from apps.calendar.series import materialize_series
+
+        materialize_series(post)
 
     # Save version
     _save_version(post, request.user)
@@ -2628,6 +2662,20 @@ def reorder_pending_media(request, workspace_id):
 
     request.session[session_key] = ids
     return HttpResponse(status=204, headers={"HX-Trigger": "previewUpdate"})
+
+
+@login_required
+@require_permission("create_posts")
+@require_POST
+def cancel_series(request, workspace_id, post_id):
+    """Delete the not-yet-published copies of this post's series."""
+    from apps.calendar.series import cancel_series as _cancel
+
+    workspace = _get_workspace(request, workspace_id)
+    post = get_object_or_404(Post, id=post_id, workspace=workspace)
+    require_post_edit(request, post)
+    _cancel(post)
+    return HttpResponse(status=204, headers={"HX-Refresh": "true"})
 
 
 @login_required

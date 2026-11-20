@@ -53,6 +53,7 @@ urlpatterns = [
     path("compose/upload-media/", views.upload_media, name="upload_media"),
     path("compose/<uuid:post_id>/upload-media/", views.upload_media, name="upload_media_post"),
     path("compose/<uuid:post_id>/remove-media/<uuid:media_id>/", views.remove_media, name="remove_media"),
+    path("compose/<uuid:post_id>/cancel-series/", views.cancel_series, name="cancel_series"),
     path("compose/<uuid:post_id>/reorder-media/", views.reorder_media, name="reorder_media"),
     path("compose/reorder-pending-media/", views.reorder_pending_media, name="reorder_pending_media"),
     path("compose/remove-pending-media/<uuid:asset_id>/", views.remove_pending_media, name="remove_pending_media"),

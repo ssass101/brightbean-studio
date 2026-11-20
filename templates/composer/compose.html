@@ -1583,6 +1583,45 @@
                                         <label class="block text-xs font-medium text-stone-500 mb-1">Hora</label>
                                         <input type="time" name="scheduled_time" class="form-datetime" value="{{ form.scheduled_time.value|default:'' }}">
                                     </div>
+                                    {% if post and post.series_id %}
+                                    <div class="rounded-lg bg-violet-50 border border-violet-100 px-3 py-2 text-xs text-violet-700">
+                                        Esta publicación es parte de una serie
+                                        {% if series_future_count %}con <strong>{{ series_future_count }}</strong> repetición{{ series_future_count|pluralize:",es" }} por salir.{% else %}(sin repeticiones pendientes).{% endif %}
+                                        {% if series_future_count %}
+                                        <button type="button"
+                                                hx-post="{% url 'composer:cancel_series' workspace_id=workspace.id post_id=post.id %}"
+                                                hx-confirm="¿Eliminar las {{ series_future_count }} repeticiones futuras? Esta publicación no se toca."
+                                                hx-swap="none"
+                                                class="block mt-1 font-semibold text-red-600 hover:underline cursor-pointer">Cancelar repeticiones futuras</button>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <div id="series-box" class="border-t border-stone-100 pt-3" data-config='{{ series_config_json }}'>
+                                        <label class="flex items-center gap-2 text-xs font-medium text-stone-600 cursor-pointer">
+                                            <input type="checkbox" name="repeat_enabled" value="1" id="repeat-enabled" {% if series_config %}checked{% endif %}>
+                                            Repetir en una serie
+                                        </label>
+                                        <div id="repeat-fields" class="{% if not series_config %}hidden {% endif %}mt-2 space-y-2">
+                                            <div class="flex gap-1" id="repeat-days">
+                                                {% for n, label in repeat_days %}
+                                                <label class="repeat-day flex-1 text-center text-xs font-medium rounded-md border border-stone-200 py-1.5 cursor-pointer select-none" data-day="{{ n }}">
+                                                    <input type="checkbox" name="repeat_weekdays" value="{{ n }}" class="sr-only" {% if series_config and n in series_config.weekdays %}checked{% endif %}>{{ label }}
+                                                </label>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs text-stone-500">Durante</span>
+                                                <input type="number" min="1" max="52" name="repeat_count" id="repeat-count" class="form-datetime" style="width:4.5rem" value="{% if series_config %}{{ series_config.count }}{% else %}4{% endif %}">
+                                                <select name="repeat_unit" id="repeat-unit" class="form-datetime">
+                                                    <option value="weeks" {% if series_config.unit != 'months' %}selected{% endif %}>semanas</option>
+                                                    <option value="months" {% if series_config.unit == 'months' %}selected{% endif %}>meses</option>
+                                                </select>
+                                            </div>
+                                            <div id="repeat-preview" class="text-xs text-stone-500 leading-relaxed"></div>
+                                            <p class="text-[0.6875rem] text-stone-400 leading-relaxed">Las repeticiones salen con el mismo contenido y formato. El cliente aprueba solo la primera.</p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
                                     <div class="text-xs text-stone-400 flex items-center gap-1">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                         Timezone: {{ workspace.effective_timezone }}
@@ -3095,6 +3134,55 @@ function composerApp() {
             showMenu();
         });
     }
+
+    // "Repetir en una serie": toggle, weekday chips and a live preview of the dates.
+    (function() {
+        var enabled = document.getElementById('repeat-enabled');
+        var fields = document.getElementById('repeat-fields');
+        if (!enabled || !fields) return;
+        var preview = document.getElementById('repeat-preview');
+        var count = document.getElementById('repeat-count');
+        var unit = document.getElementById('repeat-unit');
+        var dateInput = document.querySelector('input[name="scheduled_date"]');
+        var dayLabels = fields.querySelectorAll('.repeat-day');
+        var names = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+        function paint() {
+            dayLabels.forEach(function(l) {
+                var on = l.querySelector('input').checked;
+                l.classList.toggle('bg-orange-500', on);
+                l.classList.toggle('text-white', on);
+                l.classList.toggle('border-orange-500', on);
+            });
+        }
+        function render() {
+            paint();
+            if (!enabled.checked) { preview.textContent = ''; return; }
+            var picked = [];
+            dayLabels.forEach(function(l) { if (l.querySelector('input').checked) picked.push(parseInt(l.dataset.day, 10)); });
+            if (!dateInput.value || !picked.length || !(parseInt(count.value, 10) > 0)) {
+                preview.textContent = picked.length ? 'Elige la fecha de la primera publicación.' : 'Elige al menos un día.';
+                return;
+            }
+            var start = new Date(dateInput.value + 'T12:00:00');
+            var end = new Date(start);
+            if (unit.value === 'months') { end.setMonth(end.getMonth() + parseInt(count.value, 10)); }
+            else { end.setDate(end.getDate() + 7 * parseInt(count.value, 10)); }
+            var dates = [new Date(start)];
+            var d = new Date(start);
+            d.setDate(d.getDate() + 1);
+            while (d < end && dates.length < 101) {
+                if (picked.indexOf((d.getDay() + 6) % 7) !== -1) dates.push(new Date(d));
+                d.setDate(d.getDate() + 1);
+            }
+            var fmt = function(x) { return names[x.getDay()] + ' ' + x.getDate() + '/' + (x.getMonth() + 1); };
+            var shown = dates.slice(0, 8).map(fmt).join(', ') + (dates.length > 8 ? '…' : '');
+            preview.textContent = 'Se publicará ' + dates.length + ' vez' + (dates.length === 1 ? '' : 'ces') + ': ' + shown;
+        }
+        enabled.addEventListener('change', function() { fields.classList.toggle('hidden', !enabled.checked); render(); });
+        fields.addEventListener('change', render);
+        dateInput.addEventListener('change', render);
+        render();
+    })();
 
     // Schedule sub-view: confirm button sets mode to schedule and closes
     if (scheduleConfirm) {

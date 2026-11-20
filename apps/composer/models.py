@@ -264,6 +264,12 @@ class Post(models.Model):
     # is actually scheduled.
     proposed_publish_at = models.DateTimeField(blank=True, null=True)
 
+    # Repeat on chosen weekdays ("series"): ``series_config`` holds
+    # {"weekdays": [0-6], "count": N, "unit": "weeks"|"months"} until the post is
+    # scheduled; ``series_id`` then ties the original and its copies together.
+    series_id = models.UUIDField(blank=True, null=True, db_index=True)
+    series_config = models.JSONField(blank=True, null=True)
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

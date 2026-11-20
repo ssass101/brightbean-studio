@@ -261,6 +261,13 @@ def _auto_schedule_approved(post, approved_pps):
             scheduled.append(pp)
     if scheduled:
         sync_post_scheduled_at(post)
+        # The client's approval of the original covers its repeat series.
+        try:
+            from apps.calendar.series import materialize_series
+
+            materialize_series(post)
+        except Exception:
+            logger.exception("Could not create the repeat series for post %s", post.pk)
     return scheduled, expired
 
 
