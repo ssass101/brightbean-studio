@@ -1642,6 +1642,7 @@
 
                 {% if show_submit_button %}
                 <button type="submit" name="action" value="submit_for_approval"
+                        @click="lastAction = 'submit_for_approval'"
                         :disabled="selectedAccounts.length === 0"
                         class="btn-sec flex-shrink-0">
                     Enviar a aprobación
@@ -1650,6 +1651,7 @@
 
                 {% if show_resubmit_button %}
                 <button type="submit" name="action" value="resubmit_for_approval"
+                        @click="lastAction = 'resubmit_for_approval'"
                         :disabled="selectedAccounts.length === 0"
                         class="btn-sec flex-shrink-0">
                     Reenviar
@@ -1659,6 +1661,7 @@
                 {% if not post_is_readonly %}
                 <!-- Single primary: its action follows the "¿Cuándo?" choice above -->
                 <button type="submit" id="publish-primary" name="action" :value="publishMode"
+                        @click="lastAction = publishMode"
                         :disabled="selectedAccounts.length === 0 || isSubmitting"
                         class="btn-pri flex-shrink-0"
                         x-text="isSubmitting
@@ -2226,6 +2229,10 @@ function composerApp() {
         // Preview panel mode: post (publicación) | grid (feed real de Instagram)
         previewMode: 'post',
         instagramGridLoaded: false,
+        // Which button triggered the last submit (set on @click). Drives the
+        // success feedback in onFormSaved — publishMode only covers the primary
+        // button, not "Enviar a aprobación".
+        lastAction: 'schedule',
         charLimits: JSON.parse(document.getElementById('composer-char-limits').textContent),
         overrides: {},
         advancedOpen: {},
@@ -2949,7 +2956,16 @@ function composerApp() {
             if (event.detail.elt !== event.currentTarget) return;
             const xhr = event.detail.xhr;
             if (event.detail.successful) {
-                const action = this.publishMode;
+                const action = this.lastAction;
+                // Sending to approval: confirm and go to the calendar so the
+                // author sees the post leave their hands (it's now pending).
+                if (action === 'submit_for_approval' || action === 'resubmit_for_approval') {
+                    this.formSuccess = 'Enviada a aprobación';
+                    setTimeout(() => {
+                        window.location.href = '{% url "calendar:calendar" workspace_id=workspace.id %}';
+                    }, 1200);
+                    return;
+                }
                 if (action === 'schedule' || action === 'publish_now' || action === 'add_to_queue' || action === 'add_to_queue_priority') {
                     // Show confirmation toast then redirect to calendar
                     const labels = {
