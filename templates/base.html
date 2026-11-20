@@ -331,55 +331,66 @@
                      x-transition:leave="transition ease-in duration-75"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="absolute left-2 right-2 top-full mt-1 bg-white rounded-xl shadow-lg ring-1 ring-stone-200 py-1 z-50">
-                    <a href="{% url 'dashboard' %}"
-                       class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-black/[0.04] transition-colors {% if request.resolver_match.url_name == 'dashboard' %}bg-stone-50 font-semibold text-stone-900{% else %}text-stone-700{% endif %}">
-                        <div class="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 bg-stone-100">
-                            <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-                        </div>
-                        <span>Resumen de cuentas</span>
-                    </a>
-                    <div class="border-t border-stone-100 my-1"></div>
-                    {% for ws in sidebar_workspaces %}
-                    <a href="{% url 'calendar:calendar' workspace_id=ws.id %}"
-                       class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-black/[0.04] transition-colors {% if request.workspace and ws.id == request.workspace.id %}bg-stone-50 font-semibold text-stone-900{% else %}text-stone-700{% endif %}">
-                        {% if ws.icon %}
-                        <img src="{{ ws.icon.url }}" alt="" class="w-7 h-7 rounded-md object-cover flex-shrink-0">
-                        {% else %}
-                        <div class="w-7 h-7 rounded-md flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
-                             style="background: var(--primary);">
-                            {{ ws.name|make_list|first|upper }}
-                        </div>
-                        {% endif %}
-                        <span class="truncate">{{ ws.name }}</span>
-                        {% if request.workspace and ws.id == request.workspace.id %}
-                        <svg class="w-4 h-4 text-stone-400 ml-auto flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                        {% endif %}
-                    </a>
-                    {% empty %}
-                    <p class="px-3 py-2 text-sm text-stone-400">Sin espacios de trabajo</p>
-                    {% endfor %}
-                    {% if can_create_workspace %}
-                    <div class="border-t border-stone-100 mt-1 pt-1">
-                        <button @click="wsOpen = false; $dispatch('open-create-ws')"
-                                class="flex items-center gap-2.5 px-3 py-2 text-sm text-stone-600 rounded-md hover:bg-black/[0.04] transition-colors w-full cursor-pointer">
-                            <div class="w-7 h-7 rounded-md flex items-center justify-center border border-dashed border-stone-300 flex-shrink-0">
-                                <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                            </div>
-                            <span>Crear espacio de trabajo</span>
-                        </button>
-                    </div>
-                    {% endif %}
+                     class="absolute left-2 right-2 top-full mt-1 bg-white rounded-xl shadow-lg ring-1 ring-stone-200 z-50 overflow-hidden">
+                    {# ── Zona fija: workspace actual + sus acciones ── #}
                     {% if request.workspace %}
-                    <div class="border-t border-stone-100 mt-1 pt-1">
+                    <div class="px-2 pt-2 pb-1">
+                        <div class="flex items-center gap-2.5 px-2 pt-1 pb-2">
+                            {% if request.workspace.icon %}
+                            <img src="{{ request.workspace.icon.url }}" alt="" class="w-7 h-7 rounded-md object-cover flex-shrink-0">
+                            {% else %}
+                            <div class="w-7 h-7 rounded-md flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0" style="background: var(--primary);">{{ request.workspace.name|make_list|first|upper }}</div>
+                            {% endif %}
+                            <span class="flex-1 text-[13.5px] font-bold text-stone-900 truncate">{{ request.workspace.name }}</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style="color: var(--primary); background: var(--primary-soft);">Actual</span>
+                        </div>
+                        <a href="{% url 'dashboard' %}"
+                           class="flex items-center gap-2.5 px-2 py-1.5 text-sm rounded-md hover:bg-black/[0.04] transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-stone-900 font-semibold{% else %}text-stone-700{% endif %}">
+                            <svg class="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                            <span>Resumen de cuentas</span>
+                        </a>
                         <a href="{% url 'workspaces:settings' workspace_id=request.workspace.id %}"
-                           class="flex items-center gap-2.5 px-3 py-2 text-sm text-stone-600 rounded-md hover:bg-black/[0.04] transition-colors w-full cursor-pointer">
-                            <div class="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                            </div>
-                            <span>Configuración del espacio de trabajo</span>
+                           class="flex items-center gap-2.5 px-2 py-1.5 text-sm text-stone-700 rounded-md hover:bg-black/[0.04] transition-colors">
+                            <svg class="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                            <span>Configuración del espacio</span>
                         </a>
                     </div>
+                    {% else %}
+                    <a href="{% url 'dashboard' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-stone-700 hover:bg-black/[0.04] transition-colors">
+                        <svg class="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                        <span>Resumen de cuentas</span>
+                    </a>
+                    {% endif %}
+
+                    {# ── Cambiar de workspace (lista con scroll) ── #}
+                    <div class="border-t border-stone-100"></div>
+                    <div class="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wide text-stone-400">Cambiar a</div>
+                    <div class="px-2 pb-1 overflow-y-auto" style="max-height: 232px;">
+                        {% for ws in sidebar_workspaces %}
+                        {% if not request.workspace or ws.id != request.workspace.id %}
+                        <a href="{% url 'calendar:calendar' workspace_id=ws.id %}"
+                           class="flex items-center gap-2.5 px-2 py-1.5 text-sm rounded-md hover:bg-black/[0.04] transition-colors text-stone-700">
+                            {% if ws.icon %}
+                            <img src="{{ ws.icon.url }}" alt="" class="w-6 h-6 rounded-md object-cover flex-shrink-0">
+                            {% else %}
+                            <div class="w-6 h-6 rounded-md flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0" style="background: var(--primary);">{{ ws.name|make_list|first|upper }}</div>
+                            {% endif %}
+                            <span class="truncate">{{ ws.name }}</span>
+                        </a>
+                        {% endif %}
+                        {% empty %}
+                        <p class="px-2 py-2 text-sm text-stone-400">Sin espacios de trabajo</p>
+                        {% endfor %}
+                    </div>
+
+                    {% if can_create_workspace %}
+                    <button @click="wsOpen = false; $dispatch('open-create-ws')"
+                            class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-stone-600 hover:bg-black/[0.04] transition-colors w-full cursor-pointer border-t border-stone-100">
+                        <div class="w-6 h-6 rounded-md flex items-center justify-center border border-dashed border-stone-300 flex-shrink-0">
+                            <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                        </div>
+                        <span>Crear espacio de trabajo</span>
+                    </button>
                     {% endif %}
                 </div>
 
@@ -698,36 +709,35 @@
 
                 {% if request.workspace %}
                 {% if sidebar_channels or sidebar_unhealthy_channels %}
-                <!-- Channels -->
-                <div class="group flex items-center justify-between mt-3.5 sidebar-section-label-wrap">
-                    <div class="sidebar-section-label" style="padding-top:0">Canales</div>
-                    <a href="{% url 'social_accounts:connect' workspace_id=request.workspace.id %}"
-                       class="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded text-stone-400 hover:text-stone-600 transition-all mr-2 sidebar-nav-label"
-                       title="Conectar un canal">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </a>
-                </div>
-                {% for channel in sidebar_channels %}
-                <a href="{% url 'social_accounts:list' workspace_id=request.workspace.id %}" class="sidebar-nav-item" title="{% if channel.platform == 'youtube' %}YouTube · {% endif %}{{ channel.account_name|default:channel.account_handle }} · {{ channel.queued_post_count|default:0 }} upcoming post{{ channel.queued_post_count|default:0|pluralize }}">
-                    <div class="relative flex-shrink-0">
-                        {% if channel.avatar_url %}
-                        <img src="{{ channel.avatar_url }}" alt="" class="w-7 h-7 rounded-full object-cover">
-                        {% else %}
-                        <div class="w-7 h-7 rounded-full bg-stone-200 flex items-center justify-center text-[11px] font-semibold text-stone-500">{{ channel.account_name|default:channel.account_handle|make_list|first|upper }}</div>
-                        {% endif %}
-                        {% if channel.platform != "youtube" %}<div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center">
-                            {% include "partials/_platform_icon.html" with platform=channel.platform size="sm" %}
-                        </div>{% endif %}
+                <!-- Channels (panel con estado) -->
+                <div class="sidebar-chan-panel">
+                    <div class="sidebar-chan-head">
+                        <span class="t sidebar-nav-label">Canales</span>
+                        <a href="{% url 'social_accounts:connect' workspace_id=request.workspace.id %}"
+                           class="sidebar-chan-add sidebar-nav-label" title="Conectar un canal">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </a>
                     </div>
-                    {% if channel.platform == "youtube" %}
-                    <span class="sidebar-nav-label min-w-0 flex-1" style="line-height:1.35;">
-                        <span class="block text-[11px] font-semibold text-stone-500">YouTube</span>
-                        <span class="block truncate">{{ channel.account_name|default:channel.account_handle }}</span>
-                    </span>
-                    {% else %}<span class="sidebar-nav-label truncate">{{ channel.account_name|default:channel.account_handle }}</span>{% endif %}
-                    <span class="sidebar-badge">{{ channel.queued_post_count|default:0 }}</span>
-                </a>
-                {% endfor %}
+                    {% for channel in sidebar_channels %}
+                    <a href="{% url 'social_accounts:list' workspace_id=request.workspace.id %}" class="sidebar-chan-row" title="{% if channel.platform == 'youtube' %}YouTube · {% endif %}{{ channel.account_name|default:channel.account_handle }} · {{ channel.queued_post_count|default:0 }} programada{{ channel.queued_post_count|default:0|pluralize }}">
+                        <div class="relative flex-shrink-0">
+                            {% if channel.avatar_url %}
+                            <img src="{{ channel.avatar_url }}" alt="" class="w-7 h-7 rounded-full object-cover">
+                            {% else %}
+                            <div class="w-7 h-7 rounded-full bg-stone-200 flex items-center justify-center text-[11px] font-semibold text-stone-500">{{ channel.account_name|default:channel.account_handle|make_list|first|upper }}</div>
+                            {% endif %}
+                            {% if channel.platform != "youtube" %}<div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                                {% include "partials/_platform_icon.html" with platform=channel.platform size="sm" %}
+                            </div>{% endif %}
+                        </div>
+                        <div class="sidebar-chan-body sidebar-nav-label">
+                            <div class="sidebar-chan-name">{% if channel.platform == "youtube" %}YouTube · {% endif %}{{ channel.account_name|default:channel.account_handle }}</div>
+                            <div class="sidebar-chan-meta">{{ channel.queued_post_count|default:0 }} programada{{ channel.queued_post_count|default:0|pluralize }}</div>
+                        </div>
+                        <span class="sidebar-chan-dot sidebar-nav-label {% if channel.queued_post_count %}ok{% else %}empty{% endif %}" title="{% if channel.queued_post_count %}Con contenido{% else %}Sin contenido{% endif %}"></span>
+                    </a>
+                    {% endfor %}
+                </div>
                 {% endif %}
 
                 {% for channel in sidebar_unhealthy_channels %}
