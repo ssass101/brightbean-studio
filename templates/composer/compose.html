@@ -1678,8 +1678,10 @@
         </form>
 
         {% if post and approval_history %}
-        <!-- Approval History & Comments — separado del editor por un corte claro -->
-        <div class="mt-8 pt-6 border-t-2 border-stone-100" x-data="{ showDetail: false }">
+        <!-- Approval History & Comments — separado del editor, con su propio padding
+             lateral porque este bloque queda fuera de .cmp-content (que trae el
+             padding del editor). Sin esto los textos tocan el margen. -->
+        <div class="mt-6 pt-6 px-[18px] pb-4 border-t-2 border-stone-100" x-data="{ showDetail: {% if latest_feedback %}true{% else %}false{% endif %} }">
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <h3 class="text-[12px] font-bold text-stone-400 uppercase tracking-wider">Revisión y aprobación</h3>
@@ -1766,14 +1768,15 @@
             </div>
             {% endif %}
 
-            <!-- Toggle para abrir/cerrar el detalle (historial + comentarios) -->
+            <!-- Toggle para abrir/cerrar el detalle (historial + comentarios).
+                 Se ve claramente como un botón: fondo, borde y chevron bien visible. -->
             <button type="button" @click="showDetail = !showDetail"
-                    class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-[12.5px] font-semibold text-stone-500 hover:bg-stone-50 transition-colors">
+                    class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-lg border border-stone-200 bg-stone-50 text-[12.5px] font-semibold text-stone-600 hover:bg-stone-100 hover:border-stone-300 transition-colors">
                 <span class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg>
-                    Historial y comentarios
+                    <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg>
+                    <span x-text="showDetail ? 'Ocultar historial y comentarios' : 'Ver historial y comentarios'"></span>
                 </span>
-                <svg class="w-4 h-4 text-stone-400 transition-transform" :class="showDetail && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                <svg class="w-5 h-5 text-stone-500 transition-transform" :class="showDetail && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
 
             <div x-show="showDetail" x-cloak x-collapse class="pt-3">
@@ -1884,14 +1887,16 @@
             </div>
         </template>
 
-        <!-- Preview de publicación (tabs IG/FB internos) -->
-        <div id="preview-panel" class="flex-1 overflow-y-auto p-4 space-y-4 panel-scroll"
-             x-show="previewMode === 'post'"
-             hx-post="{% url 'composer:preview' workspace_id=workspace.id %}"
-             hx-trigger="previewUpdate from:body"
-             hx-include="#composer-form"
-             hx-vals='js:{"title": document.querySelector("input[name=title]")?.value || "", "caption": document.querySelector("[name=caption]")?.value || "", "selected_accounts": document.querySelector("[name=selected_accounts]")?.value || "", "_autosave_post_id": document.querySelector("[name=_autosave_post_id]")?.value || ""}'>
-            {% include "composer/partials/preview_panel.html" %}
+        <!-- Preview de publicación (tabs IG/FB internos) — mismo ancho y centrado
+             que el grid, para que al alternar no cambie el layout de la columna. -->
+        <div x-show="previewMode === 'post'" class="flex-1 overflow-y-auto p-4 panel-scroll">
+            <div id="preview-panel" style="max-width:380px;margin:0 auto;"
+                 hx-post="{% url 'composer:preview' workspace_id=workspace.id %}"
+                 hx-trigger="previewUpdate from:body"
+                 hx-include="#composer-form"
+                 hx-vals='js:{"title": document.querySelector("input[name=title]")?.value || "", "caption": document.querySelector("[name=caption]")?.value || "", "selected_accounts": document.querySelector("[name=selected_accounts]")?.value || "", "_autosave_post_id": document.querySelector("[name=_autosave_post_id]")?.value || ""}'>
+                {% include "composer/partials/preview_panel.html" %}
+            </div>
         </div>
 
         <!-- Grid real de Instagram (mockup de perfil) -->
