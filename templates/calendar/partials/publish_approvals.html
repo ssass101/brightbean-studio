@@ -16,13 +16,13 @@ tear down the toast.
 
     {# filter pills #}
     <div class="flex flex-wrap items-center gap-x-1 gap-y-2 mb-5">
-        {% include "calendar/partials/_approval_pill.html" with pid="all" label="All" count=all_count %}
-        {% include "calendar/partials/_approval_pill.html" with pid="pending_review" label="Pending Review" count=pending_review_count %}
-        {% include "calendar/partials/_approval_pill.html" with pid="pending_client" label="Pending Client" count=pending_client_count %}
-        {% include "calendar/partials/_approval_pill.html" with pid="approved" label="Approved" count=approved_count %}
-        {% include "calendar/partials/_approval_pill.html" with pid="rejected" label="Rejected" count=rejected_count %}
-        {% include "calendar/partials/_approval_pill.html" with pid="changes_requested" label="Changes Requested" count=changes_requested_count %}
-        {% include "calendar/partials/_approval_pill.html" with pid="on_hold" label="Hold" count=on_hold_count %}
+        {% include "calendar/partials/_approval_pill.html" with pid="all" label="Todas" count=all_count %}
+        {% include "calendar/partials/_approval_pill.html" with pid="pending_review" label="Revisión interna" count=pending_review_count %}
+        {% include "calendar/partials/_approval_pill.html" with pid="pending_client" label="Pendiente del cliente" count=pending_client_count %}
+        {% include "calendar/partials/_approval_pill.html" with pid="approved" label="Aprobadas" count=approved_count %}
+        {% include "calendar/partials/_approval_pill.html" with pid="rejected" label="Rechazadas" count=rejected_count %}
+        {% include "calendar/partials/_approval_pill.html" with pid="changes_requested" label="Cambios pedidos" count=changes_requested_count %}
+        {% include "calendar/partials/_approval_pill.html" with pid="on_hold" label="En pausa" count=on_hold_count %}
     </div>
 
     {# post list #}

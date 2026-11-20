@@ -26,22 +26,22 @@
                        {% if workspace.approval_workflow_mode == value %}checked{% endif %}>
                 <div class="flex-1">
                     <div class="text-sm font-semibold mb-0.5" style="color: var(--text-primary);">
-                        {% if value == 'none' %}No approvals
-                        {% elif value == 'optional' %}Optional approvals
-                        {% elif value == 'required_internal' %}Internal review required
-                        {% elif value == 'required_internal_and_client' %}Internal review + client approval
+                        {% if value == 'none' %}Sin aprobaciones
+                        {% elif value == 'optional' %}Aprobación opcional
+                        {% elif value == 'required_internal' %}Revisión interna requerida
+                        {% elif value == 'required_internal_and_client' %}Revisión interna + aprobación del cliente
                         {% else %}{{ label }}
                         {% endif %}
                     </div>
                     <div class="text-xs" style="color: var(--text-secondary);">
                         {% if value == 'none' %}
-                            Anyone with publishing rights can schedule or publish directly.
+                            Cualquiera con permisos de publicación puede programar o publicar directamente.
                         {% elif value == 'optional' %}
-                            Creators can choose to submit a post for review, but it's not required.
+                            Quien crea contenido puede enviarlo a revisión, pero no es obligatorio.
                         {% elif value == 'required_internal' %}
-                            Every post must be approved by a team member with review rights before it can go out.
+                            Toda publicación debe ser aprobada por un miembro del equipo con permisos de revisión antes de salir.
                         {% elif value == 'required_internal_and_client' %}
-                            Posts go through internal review, then are sent to the client portal for final sign-off.
+                            Las publicaciones pasan por revisión interna y luego se envían al portal del cliente para la aprobación final.
                         {% endif %}
                     </div>
                 </div>
