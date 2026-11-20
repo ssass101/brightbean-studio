@@ -1868,45 +1868,48 @@
             </div>
         </div>
 
-        <!-- Modo: Publicación / Grid (solo si hay una cuenta de Instagram seleccionada) -->
+        <!-- Si deja de haber cuenta de IG mientras estás en Grid, volver a publicación. -->
         <div x-effect="if (!instagramGridAccountId && previewMode === 'grid') previewMode = 'post'" style="display:none"></div>
-        <template x-if="instagramGridAccountId">
-            <div class="px-4 pt-3">
-                <div class="prev-seg inline-flex p-0.5 rounded-lg" style="background:#F1F3F5;">
-                    <button type="button" @click="previewMode = 'post'"
-                            class="prev-seg-btn text-[12px] font-semibold px-3 py-1.5 rounded-md transition-colors"
-                            :class="previewMode === 'post' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500'">
-                        Publicación
-                    </button>
-                    <button type="button" @click="previewMode = 'grid'; loadInstagramGrid()"
-                            class="prev-seg-btn text-[12px] font-semibold px-3 py-1.5 rounded-md transition-colors"
-                            :class="previewMode === 'grid' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500'">
-                        Grid de Instagram
-                    </button>
-                </div>
-            </div>
-        </template>
 
-        <!-- Preview de publicación (tabs IG/FB internos) — mismo ancho y centrado
-             que el grid, para que al alternar no cambie el layout de la columna. -->
-        <div x-show="previewMode === 'post'" class="flex-1 overflow-y-auto p-4 panel-scroll">
-            <div id="preview-panel" style="max-width:380px;margin:0 auto;"
-                 hx-post="{% url 'composer:preview' workspace_id=workspace.id %}"
-                 hx-trigger="previewUpdate from:body"
-                 hx-include="#composer-form"
-                 hx-vals='js:{"title": document.querySelector("input[name=title]")?.value || "", "caption": document.querySelector("[name=caption]")?.value || "", "selected_accounts": document.querySelector("[name=selected_accounts]")?.value || "", "_autosave_post_id": document.querySelector("[name=_autosave_post_id]")?.value || ""}'>
-                {% include "composer/partials/preview_panel.html" %}
-            </div>
-        </div>
-
-        <!-- Grid real de Instagram (mockup de perfil) -->
-        <div x-show="previewMode === 'grid'" x-cloak class="flex-1 overflow-y-auto p-4 panel-scroll">
+        <!-- Un solo contenedor con marco: la barra de pestañas (Facebook / Instagram / Grid)
+             va pegada arriba, y debajo se muestra el preview de publicación o el grid.
+             El selector segmentado suelto de antes se eliminó: Grid es una pestaña más. -->
+        <div class="flex-1 overflow-y-auto p-4 panel-scroll">
             <div class="rounded-xl overflow-hidden border border-stone-200 bg-white" style="max-width:380px;margin:0 auto;">
-                <div id="instagram-grid-container">
-                    <div class="flex items-center justify-center py-16 text-stone-300" x-show="!instagramGridLoaded">
-                        <svg class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"/></svg>
+
+                <!-- Preview de publicación (incluye su barra de pestañas de plataforma
+                     + la pestaña Grid, dibujada por el propio partial). -->
+                <div x-show="previewMode === 'post'"
+                     id="preview-panel"
+                     hx-post="{% url 'composer:preview' workspace_id=workspace.id %}"
+                     hx-trigger="previewUpdate from:body"
+                     hx-include="#composer-form"
+                     hx-vals='js:{"title": document.querySelector("input[name=title]")?.value || "", "caption": document.querySelector("[name=caption]")?.value || "", "selected_accounts": document.querySelector("[name=selected_accounts]")?.value || "", "_autosave_post_id": document.querySelector("[name=_autosave_post_id]")?.value || ""}'>
+                    {% include "composer/partials/preview_panel.html" %}
+                </div>
+
+                <!-- Grid real de Instagram (mockup de perfil). Comparte marco; cuando está
+                     activo mostramos su propia barrita de pestañas arriba para poder volver. -->
+                <div x-show="previewMode === 'grid'" x-cloak>
+                    <div class="flex gap-1 px-3 py-2 border-b" style="border-color:#E7E5E4;">
+                        <button type="button" @click="previewMode = 'post'"
+                                class="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md border border-transparent text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-colors cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                            Publicación
+                        </button>
+                        <button type="button"
+                                class="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md border bg-blue-50 text-blue-600 border-blue-200 cursor-default">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM4 9h16M4 15h16M9 4v16M15 4v16"/></svg>
+                            Grid
+                        </button>
+                    </div>
+                    <div id="instagram-grid-container">
+                        <div class="flex items-center justify-center py-16 text-stone-300" x-show="!instagramGridLoaded">
+                            <svg class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"/></svg>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

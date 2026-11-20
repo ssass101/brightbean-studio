@@ -9,13 +9,15 @@ Context: previews (list of dicts with account, title, caption, first_comment, ch
     const _igIdx = _platforms.findIndex(p => p === 'instagram' || p === 'instagram_login');
     if (_igIdx >= 0) activePreview = _igIdx;
 ">
-    {% if previews|length > 1 %}
-    <!-- Platform selector tabs -->
-    <div class="flex gap-1 px-3 py-2 border-b" style="border-color: #E7E5E4;">
+    {# Barra de pestañas: plataformas (Facebook / Instagram…) + la pestaña Grid.
+       Se muestra si hay más de una plataforma O si existe grid de Instagram
+       disponible (así Grid convive con las plataformas, sin selector suelto). #}
+    <div x-show="{% if previews|length > 1 %}true{% else %}false{% endif %} || instagramGridAccountId"
+         class="flex gap-1 px-3 py-2 border-b" style="border-color: #E7E5E4;">
         {% for p in previews %}
         <button type="button"
-                @click="activePreview = {{ forloop.counter0 }}"
-                :class="activePreview === {{ forloop.counter0 }}
+                @click="activePreview = {{ forloop.counter0 }}; previewMode = 'post'"
+                :class="(previewMode === 'post' && activePreview === {{ forloop.counter0 }})
                     ? 'bg-blue-50 text-blue-600 border-blue-200'
                     : 'text-stone-400 border-transparent hover:bg-stone-50 hover:text-stone-600'"
                 class="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer">
@@ -23,8 +25,19 @@ Context: previews (list of dicts with account, title, caption, first_comment, ch
             {{ p.account.platform|title }}
         </button>
         {% endfor %}
+        {# Pestaña Grid — solo si hay una cuenta de Instagram seleccionada #}
+        <template x-if="instagramGridAccountId">
+            <button type="button"
+                    @click="previewMode = 'grid'; loadInstagramGrid()"
+                    :class="previewMode === 'grid'
+                        ? 'bg-blue-50 text-blue-600 border-blue-200'
+                        : 'text-stone-400 border-transparent hover:bg-stone-50 hover:text-stone-600'"
+                    class="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM4 9h16M4 15h16M9 4v16M15 4v16"/></svg>
+                Grid
+            </button>
+        </template>
     </div>
-    {% endif %}
 
     {% for p in previews %}
     <div class="preview-card" x-show="activePreview === {{ forloop.counter0 }}" x-cloak
