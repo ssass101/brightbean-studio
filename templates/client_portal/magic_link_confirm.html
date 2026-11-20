@@ -11,31 +11,174 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
     <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+    <style>
+        :root {
+            --portal-blue: #2563EB;
+            --portal-blue-deep: #1D4ED8;
+            --portal-blue-night: #172C66;
+        }
+        body { margin: 0; font-family: var(--brand-font-body, 'Inter', system-ui, sans-serif); }
+        .portal-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+        }
+        /* Panel izquierdo: la marca, en azul */
+        .portal-brand {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(1200px 600px at -10% 0%, rgba(96,165,250,0.35), transparent 55%),
+                radial-gradient(900px 600px at 110% 120%, rgba(23,44,102,0.65), transparent 50%),
+                linear-gradient(135deg, var(--portal-blue) 0%, var(--portal-blue-deep) 55%, var(--portal-blue-night) 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 48px 56px;
+        }
+        /* textura sutil de puntos */
+        .portal-brand::after {
+            content: "";
+            position: absolute; inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px);
+            background-size: 22px 22px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .portal-brand > * { position: relative; z-index: 1; }
+        .portal-eyebrow {
+            font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+            color: rgba(255,255,255,0.7);
+        }
+        .portal-headline {
+            font-family: var(--brand-font-display, 'Plus Jakarta Sans', 'Inter', sans-serif);
+            font-size: clamp(32px, 4vw, 46px);
+            font-weight: 800; line-height: 1.05; letter-spacing: -0.02em;
+            margin: 18px 0 16px;
+            text-wrap: balance;
+        }
+        .portal-sub { font-size: 15.5px; line-height: 1.6; color: rgba(255,255,255,0.82); max-width: 30ch; }
+        .portal-points { display: flex; flex-direction: column; gap: 12px; margin-top: 34px; }
+        .portal-point { display: flex; align-items: center; gap: 11px; font-size: 14px; color: rgba(255,255,255,0.9); }
+        .portal-point svg { width: 18px; height: 18px; flex-shrink: 0; color: #93C5FD; }
+        .portal-foot { font-size: 12.5px; color: rgba(255,255,255,0.6); }
+
+        /* Panel derecho: el acceso */
+        .portal-access {
+            display: flex; align-items: center; justify-content: center;
+            padding: 40px 24px;
+            background: #F8FAFC;
+        }
+        .portal-card {
+            width: 100%; max-width: 380px;
+            background: #fff;
+            border: 1px solid #E8EBF0;
+            border-radius: 18px;
+            box-shadow: 0 10px 40px rgba(23,44,102,0.08);
+            padding: 36px 32px;
+            text-align: center;
+        }
+        .portal-logo-ring {
+            width: 56px; height: 56px; margin: 0 auto 20px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--portal-blue), var(--portal-blue-deep));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+        }
+        .portal-logo-ring svg { width: 28px; height: 28px; color: #fff; }
+        .portal-card h1 {
+            font-family: var(--brand-font-display, 'Plus Jakarta Sans', 'Inter', sans-serif);
+            font-size: 20px; font-weight: 800; letter-spacing: -0.015em;
+            color: #101828; margin: 0 0 8px;
+        }
+        .portal-card p { font-size: 13.5px; line-height: 1.55; color: #667085; margin: 0 0 24px; }
+        .portal-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%;
+            font-family: var(--brand-font-body, 'Inter', sans-serif);
+            font-size: 14px; font-weight: 700; letter-spacing: -0.01em;
+            padding: 12px 20px;
+            border-radius: 11px; border: 0; cursor: pointer;
+            color: #fff;
+            background: var(--portal-blue);
+            box-shadow: 0 2px 6px rgba(37,99,235,0.3);
+            transition: background 120ms ease;
+        }
+        .portal-btn:hover { background: var(--portal-blue-deep); }
+        .portal-btn svg { width: 17px; height: 17px; }
+        .portal-secure { margin-top: 18px; font-size: 11.5px; color: #98A2B3; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .portal-secure svg { width: 13px; height: 13px; }
+
+        /* Mobile: se apila, la marca arriba compacta */
+        @media (max-width: 860px) {
+            .portal-shell { grid-template-columns: 1fr; }
+            .portal-brand { padding: 40px 28px 34px; }
+            .portal-headline { font-size: clamp(28px, 7vw, 34px); margin: 14px 0 12px; }
+            .portal-points { margin-top: 24px; }
+            .portal-foot { display: none; }
+            .portal-access { padding: 28px 20px 44px; }
+            .portal-card { box-shadow: none; border: 1px solid #E8EBF0; }
+        }
+    </style>
 </head>
-<body class="min-h-screen flex items-center justify-center px-4" style="background: var(--surface-1); font-family: var(--font-body);">
-    <div class="w-full max-w-sm text-center">
-        <div class="rounded-2xl border p-8" style="background: var(--surface-0); border-color: var(--border); box-shadow: var(--shadow-lg);">
-            <!-- Icon -->
-            <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-5" style="background: var(--brand-50);">
-                <svg class="w-7 h-7" style="color: var(--brand-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3 3m0 0l-3 3m3-3H2.25"/></svg>
+<body>
+    <div class="portal-shell">
+
+        <!-- Marca -->
+        <section class="portal-brand">
+            <div class="portal-eyebrow">Portal de clientes · Canvas</div>
+
+            <div>
+                <h1 class="portal-headline">En equipo se trabaja mejor.</h1>
+                <p class="portal-sub">
+                    Accedé a tu portal para revisar, aprobar y gestionar el contenido de tus redes — todo en un solo lugar.
+                </p>
+
+                <div class="portal-points">
+                    <div class="portal-point">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Aprobá o pedí cambios en un clic
+                    </div>
+                    <div class="portal-point">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l9-4.5 9 4.5m-18 0v9l9 4.5m-9-13.5l9 4.5m9-4.5v9l-9 4.5m9-13.5l-9 4.5m0 9V12"/></svg>
+                        Visualizá cada pieza antes de publicar
+                    </div>
+                    <div class="portal-point">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Dejá comentarios y seguí el calendario
+                    </div>
+                </div>
             </div>
 
-            <h1 class="text-lg font-bold tracking-tight mb-2" style="color: var(--text-primary); font-family: var(--font-display);">
-                Ingresar a {{ workspace.name }}
-            </h1>
-            <p class="text-sm leading-relaxed mb-6" style="color: var(--text-secondary);">
-                Continúa para revisar y aprobar las publicaciones programadas de {{ workspace.name }}.
-            </p>
+            <div class="portal-foot">Un espacio de trabajo de Canvas Digital Experiences</div>
+        </section>
 
-            <form method="post" action="{% url 'client_portal:magic_link_entry' token=token %}">
-                {% csrf_token %}
-                <button type="submit"
-                        class="w-full px-4 py-2.5 text-[0.8125rem] font-semibold rounded-full text-white cursor-pointer"
-                        style="background: var(--brand-primary, #2563EB); color: #fff; border: 0;">
-                    Continuar al portal
-                </button>
-            </form>
-        </div>
+        <!-- Acceso -->
+        <section class="portal-access">
+            <div class="portal-card">
+                <div class="portal-logo-ring">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3 3m0 0l-3 3m3-3H2.25"/></svg>
+                </div>
+
+                <h1>Accedé a {{ workspace.name }}</h1>
+                <p>Continuá para revisar y aprobar las publicaciones programadas de tus redes.</p>
+
+                <form method="post" action="{% url 'client_portal:magic_link_entry' token=token %}">
+                    {% csrf_token %}
+                    <button type="submit" class="portal-btn">
+                        Entrar al portal
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </button>
+                </form>
+
+                <div class="portal-secure">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 00-9 0v3.75m-.75 0h10.5a2.25 2.25 0 012.25 2.25v6a2.25 2.25 0 01-2.25 2.25H6.75a2.25 2.25 0 01-2.25-2.25v-6a2.25 2.25 0 012.25-2.25z"/></svg>
+                    Acceso seguro mediante enlace privado
+                </div>
+            </div>
+        </section>
+
     </div>
 </body>
 </html>
