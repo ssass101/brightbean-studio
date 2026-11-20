@@ -680,6 +680,7 @@
                 <a href="{% url 'notifications:list' %}" class="mb-1 sidebar-nav-item {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'notifications' %}active{% endif %}">
                     <svg class="flex-shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
                     <span class="sidebar-nav-label">Notificaciones</span>
+                    {% if sidebar_unread_notifications %}<span class="sidebar-badge" style="background: var(--primary); color: #fff;">{{ sidebar_unread_notifications }}</span>{% endif %}
                 </a>
 
                 {% if request.workspace %}

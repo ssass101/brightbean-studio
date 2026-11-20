@@ -109,6 +109,17 @@ def sidebar_context(request):
         sidebar_idea_columns = [{"id": str(g.id), "label": g.name} for g in groups] if groups.exists() else []
         sidebar_idea_tags = list(Tag.objects.for_workspace(workspace.id).values_list("name", flat=True))
 
+    # Unread notifications (campana): por usuario, no por workspace.
+    sidebar_unread_notifications = 0
+    try:
+        from apps.notifications.models import Notification
+
+        sidebar_unread_notifications = Notification.objects.filter(
+            user=request.user, is_read=False
+        ).count()
+    except Exception:
+        sidebar_unread_notifications = 0
+
     # Workspace creation permission (org owners and admins only)
     can_create_workspace = False
     org_membership = getattr(request, "org_membership", None)
@@ -138,6 +149,7 @@ def sidebar_context(request):
         "sidebar_unhealthy_channels": sidebar_unhealthy_channels,
         "sidebar_connectable_platforms": sidebar_connectable_platforms,
         "sidebar_unread_inbox_count": sidebar_unread_inbox_count,
+        "sidebar_unread_notifications": sidebar_unread_notifications,
         "sidebar_pending_approvals": sidebar_pending_approvals,
         "sidebar_idea_columns": sidebar_idea_columns,
         "sidebar_idea_tags": sidebar_idea_tags,
