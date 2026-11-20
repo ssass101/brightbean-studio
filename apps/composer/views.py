@@ -258,6 +258,34 @@ def _apply_cover_asset(request, extra, acc_id, workspace):
         extra.pop("thumbnail_asset_id", None)
 
 
+def _attach_pending_session_media(request, post, workspace):
+    """Attach media uploaded for a brand-new post (held in the session) to the Post.
+
+    On a new post the composer stores just-uploaded assets under
+    ``pending_media_<ws>`` in the session until the post has a PK. The main save
+    path does this inline, but the approval actions (submit/resubmit) return
+    early, so they must call this explicitly — otherwise a new post sent to
+    approval reaches the client with no media.
+    """
+    session_key = f"pending_media_{workspace.id}"
+    pending_ids = request.session.get(session_key, [])
+    if not pending_ids:
+        return
+    from apps.media_library.models import MediaAsset as _MediaAsset
+
+    for idx, asset_id in enumerate(pending_ids):
+        try:
+            asset = _MediaAsset.objects.get(id=asset_id, workspace=workspace)
+            PostMedia.objects.get_or_create(
+                post=post,
+                media_asset=asset,
+                defaults={"position": idx},
+            )
+        except _MediaAsset.DoesNotExist:
+            continue
+    del request.session[session_key]
+
+
 def _sync_platform_posts(request, post, workspace, initial_status=None):
     """Sync platform post selections from form data.
 
@@ -1099,16 +1127,6 @@ def save_post(request, workspace_id, post_id=None):
     workspace = _get_workspace(request, workspace_id)
     action = request.POST.get("action", "save_draft")
 
-    # TEMP diagnóstico circuito de aprobación: registra qué acción llega y el
-    # modo del workspace. Quitar una vez resuelto.
-    logger.warning(
-        "[APPROVAL-DIAG] save_post action=%r workspace_mode=%r post_id=%r all_actions=%r",
-        action,
-        workspace.approval_workflow_mode,
-        post_id,
-        request.POST.getlist("action"),
-    )
-
     if post_id:
         post = get_object_or_404(Post, id=post_id, workspace=workspace)
         # Enforce edit permissions: authors can edit their own, others need edit_others_posts
@@ -1265,6 +1283,10 @@ def save_post(request, workspace_id, post_id=None):
         # Save post first so it has a PK, then delegate to approval service
         _capture_proposed_publish_at(post, post_id, workspace, form, clear_when_blank=False)
         post.save()
+        # New posts hold their just-uploaded media in the session until the post
+        # has a PK; attach it now or the client sees an empty card.
+        if not post_id:
+            _attach_pending_session_media(request, post, workspace)
         _store_series_config(request, post)
         # Sync platform posts before submitting
         _sync_platform_posts(request, post, workspace, initial_status="draft")
@@ -1294,6 +1316,8 @@ def save_post(request, workspace_id, post_id=None):
         # Resubmit after changes requested or rejection
         _capture_proposed_publish_at(post, post_id, workspace, form, clear_when_blank=False)
         post.save()
+        if not post_id:
+            _attach_pending_session_media(request, post, workspace)
         _store_series_config(request, post)
         _sync_platform_posts(request, post, workspace, initial_status="draft")
         _save_version(post, request.user)
@@ -1320,22 +1344,7 @@ def save_post(request, workspace_id, post_id=None):
 
     # Attach pending session media for new posts
     if not post_id:
-        from apps.media_library.models import MediaAsset as _MediaAsset
-
-        session_key = f"pending_media_{workspace.id}"
-        pending_ids = request.session.get(session_key, [])
-        if pending_ids:
-            for idx, asset_id in enumerate(pending_ids):
-                try:
-                    asset = _MediaAsset.objects.get(id=asset_id, workspace=workspace)
-                    PostMedia.objects.get_or_create(
-                        post=post,
-                        media_asset=asset,
-                        defaults={"position": idx},
-                    )
-                except _MediaAsset.DoesNotExist:
-                    continue
-            del request.session[session_key]
+        _attach_pending_session_media(request, post, workspace)
 
     # Sync any new tags to the Tag model
     _sync_tags_to_model(workspace, post.tags)
