@@ -1871,16 +1871,16 @@
         <!-- Si deja de haber cuenta de IG mientras estás en Grid, volver a publicación. -->
         <div x-effect="if (!instagramGridAccountId && previewMode === 'grid') previewMode = 'post'" style="display:none"></div>
 
-        <!-- Un solo contenedor con marco: la barra de pestañas (Facebook / Instagram / Grid)
-             va pegada arriba, y debajo se muestra el preview de publicación o el grid.
-             El selector segmentado suelto de antes se eliminó: Grid es una pestaña más. -->
-        <div class="flex-1 overflow-y-auto p-4 panel-scroll">
+        <!-- Un solo contenedor con marco, pegado al tope del panel (sin padding
+             arriba, para que no flote). La barra de pestañas (Facebook / Instagram /
+             Grid) la dibuja el partial UNA sola vez y queda siempre visible; debajo
+             se muestra el preview de publicación o el grid según previewMode. -->
+        <div class="flex-1 overflow-y-auto px-4 pb-4 panel-scroll">
             <div class="rounded-xl overflow-hidden border border-stone-200 bg-white" style="max-width:380px;margin:0 auto;">
 
-                <!-- Preview de publicación (incluye su barra de pestañas de plataforma
-                     + la pestaña Grid, dibujada por el propio partial). -->
-                <div x-show="previewMode === 'post'"
-                     id="preview-panel"
+                <!-- El partial trae la barra de pestañas (siempre visible) y, debajo,
+                     las tarjetas de preview que solo se ven en modo 'post'. -->
+                <div id="preview-panel"
                      hx-post="{% url 'composer:preview' workspace_id=workspace.id %}"
                      hx-trigger="previewUpdate from:body"
                      hx-include="#composer-form"
@@ -1888,21 +1888,11 @@
                     {% include "composer/partials/preview_panel.html" %}
                 </div>
 
-                <!-- Grid real de Instagram (mockup de perfil). Comparte marco; cuando está
-                     activo mostramos su propia barrita de pestañas arriba para poder volver. -->
+                <!-- Grid real de Instagram (mockup de perfil). Hermano del partial,
+                     dentro del mismo marco y debajo de la MISMA barra de pestañas.
+                     Está fuera del partial para que el feed cargado no se pierda en
+                     cada refresco HTMX del preview. -->
                 <div x-show="previewMode === 'grid'" x-cloak>
-                    <div class="flex gap-1 px-3 py-2 border-b" style="border-color:#E7E5E4;">
-                        <button type="button" @click="previewMode = 'post'"
-                                class="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md border border-transparent text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-colors cursor-pointer">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                            Publicación
-                        </button>
-                        <button type="button"
-                                class="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md border bg-blue-50 text-blue-600 border-blue-200 cursor-default">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM4 9h16M4 15h16M9 4v16M15 4v16"/></svg>
-                            Grid
-                        </button>
-                    </div>
                     <div id="instagram-grid-container">
                         <div class="flex items-center justify-center py-16 text-stone-300" x-show="!instagramGridLoaded">
                             <svg class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"/></svg>

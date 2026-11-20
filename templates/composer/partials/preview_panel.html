@@ -38,7 +38,7 @@ Context: previews (list of dicts with account, title, caption, first_comment, ch
     </div>
 
     {% for p in previews %}
-    <div class="preview-card" x-show="activePreview === {{ forloop.counter0 }}" x-cloak
+    <div class="preview-card" x-show="previewMode === 'post' && activePreview === {{ forloop.counter0 }}" x-cloak
          style="animation: slideUp 200ms cubic-bezier(0.16,1,0.3,1) both">
 
         <!-- Platform label + char badge -->
