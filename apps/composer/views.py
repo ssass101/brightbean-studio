@@ -715,7 +715,7 @@ def compose(request, workspace_id, post_id=None):
         form = PostForm(initial=initial)
         platform_post_list = []
         scoped_platform_posts = []
-        selected_account_ids = []
+        selected_account_ids = []  # filled below with all connected accounts
         media_attachments = []
         platform_extras = {}
 
@@ -760,6 +760,11 @@ def compose(request, workspace_id, post_id=None):
             else "",
             **cfg,
         }
+
+    # New posts: select every connected account so the user starts ready to go
+    # and deselects the ones they don't want (recognition > recall).
+    if not selected_account_ids and not post_id:
+        selected_account_ids = [acc.id for acc in social_accounts]
 
     # Workspace defaults
     default_first_comment = workspace.default_first_comment

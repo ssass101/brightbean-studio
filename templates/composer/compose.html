@@ -44,11 +44,11 @@
         .panel-right-backdrop { display: none !important; }
     }
 
-    /* Platform account checkbox pill - compact for header row */
+    /* Platform account checkbox pill */
     .acct-pill {
-        display: flex; align-items: center; gap: 6px;
-        padding: 5px 10px; border-radius: 9999px;
-        border: 1.5px solid #E7E5E4;
+        display: flex; align-items: center; gap: 5px;
+        padding: 4px 8px; border-radius: 9999px;
+        border: 1.5px solid #E7E5E4; font-size: 13px;
         background: #FFFFFF;
         cursor: pointer; user-select: none;
         transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -122,7 +122,7 @@
         background: transparent;
         color: #1C1917;
         border: none;
-        resize: none; min-height: 180px;
+        resize: none; min-height: 100px;
         outline: none;
         width: 100%;
     }
@@ -341,7 +341,7 @@
             <input type="hidden" name="account_scope" value="{{ account_scope }}">
             {% endif %}
 
-            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 panel-scroll relative" style="z-index: 0;">
+            <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 sm:space-y-4 panel-scroll relative" style="z-index: 0;">
 
                 <!-- Platform account pills -->
                 <div class="flex items-center gap-2 flex-wrap">
@@ -354,9 +354,9 @@
                         </span>
                         <div class="relative flex-shrink-0">
                             {% if account.avatar_url %}
-                            <img src="{{ account.avatar_url }}" alt="{{ account.account_name|default:account.account_handle }}" class="w-7 h-7 rounded-full object-cover">
+                            <img src="{{ account.avatar_url }}" alt="{{ account.account_name|default:account.account_handle }}" class="w-6 h-6 rounded-full object-cover">
                             {% else %}
-                            <div class="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+                            <div class="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
                                 {% if account.platform == "youtube" %}<span class="text-xs font-semibold">{{ account.account_name|default:account.account_handle|make_list|first|upper }}</span>{% else %}{% include "partials/_platform_icon.html" with platform=account.platform size="sm" %}{% endif %}
                             </div>
                             {% endif %}
@@ -364,7 +364,7 @@
                                 {% include "partials/_platform_icon.html" with platform=account.platform size="sm" %}
                             </div>{% endif %}
                         </div>
-                        <span class="text-sm font-medium text-stone-700 truncate">{{ account.account_name|default:account.account_handle }}{% if account.platform == "youtube" %} <small>YouTube</small>{% endif %}</span>
+                        <span class="text-[13px] font-medium text-stone-700 truncate max-w-[140px]">{{ account.account_name|default:account.account_handle }}{% if account.platform == "youtube" %} <small>YT</small>{% endif %}</span>
                     </label>
                     {% empty %}
                     <span class="text-xs text-stone-400">No hay cuentas conectadas</span>
@@ -453,7 +453,7 @@
 
                 <!-- Title (conditional - only when YouTube/Pinterest selected) -->
                 <div x-show="anyPlatformNeedsTitle" x-transition x-cloak>
-                    <label class="block text-sm font-semibold text-stone-500 uppercase tracking-wider mb-2"
+                    <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5"
                            x-text="titleLabel">Título</label>
                     <input type="text" name="title"
                            class="w-full text-[15px] font-medium text-stone-900 px-4 py-3 rounded-xl border border-stone-200 bg-white outline-none transition-all duration-150 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
@@ -475,8 +475,8 @@
 
                 <!-- Caption with inline media -->
                 <div x-data="{ showTemplatePicker: false }">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="text-sm font-semibold text-stone-500 uppercase tracking-wider"
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-semibold text-stone-500 uppercase tracking-wider"
                                x-text="captionLabel">Texto</label>
                         <div class="flex items-center gap-2 relative">
                             {% if post and is_edit %}
@@ -580,69 +580,64 @@
                     </div>
                 </div>
 
-                <!-- Formato por cuenta (Facebook / Instagram): un solo recuadro, una fila por cuenta -->
+                <!-- Formato por cuenta (Facebook / Instagram): compacto -->
                 <div x-show="hasMediaAttached && selectedAccounts.some(id => ['facebook', 'instagram', 'instagram_login'].includes(charLimits[id]?.platform))"
                      x-cloak
                      class="border border-stone-200 rounded-xl bg-white divide-y divide-stone-100">
-                    <div class="px-4 pt-3 pb-2 text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Formato de publicación</div>
+                    <div class="px-3 pt-2.5 pb-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Formato</div>
 
-                    <!-- Facebook rows -->
+                    <!-- Facebook rows (compact) -->
                     <template x-for="accId in selectedAccounts" :key="'facebook-video-settings-' + accId">
                         <div x-show="charLimits[accId]?.platform === 'facebook' && hasMediaAttached"
                              x-data="{ facebookPostType: platformExtras[accId]?.post_type || 'video' }"
-                             class="px-4 py-3 space-y-2">
-                            {% comment %}
-                            Marks the row as present in the submit even when no media is
-                            attached, so a save can clear a stale Reel/Story hint but a
-                            non-composer save can never wipe extras it never rendered.
-                            {% endcomment %}
+                             class="px-3 py-2 space-y-1.5">
                             <input type="hidden" :name="'facebook_panel_' + accId" value="1"
                                    :disabled="charLimits[accId]?.platform !== 'facebook'">
-                            <div class="flex items-center gap-3">
-                                <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center flex-shrink-0"
+                            <div class="flex items-center gap-2">
+                                <span class="platform-icon w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
                                       :class="'pi-' + (charLimits[accId]?.platform || '')"
                                       x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                                <span class="flex-1 min-w-0 truncate text-sm font-medium text-stone-700" x-text="charLimits[accId]?.name"></span>
+                                <span class="flex-1 min-w-0 truncate text-[13px] font-medium text-stone-600" x-text="charLimits[accId]?.name"></span>
                                 <select :name="'facebook_post_type_' + accId"
                                         x-model="facebookPostType"
                                         :disabled="charLimits[accId]?.platform !== 'facebook' || !hasMediaAttached"
-                                        class="w-48 text-sm px-3 py-1.5 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                    <option value="video" x-text="hasSingleVideoAttached ? 'Video normal' : (hasSingleMediaAttached ? 'Publicación' : 'Publicación con varias fotos')"></option>
+                                        class="text-[13px] px-2 py-1 rounded-md border border-stone-200 bg-white outline-none focus:border-orange-500 transition-all">
+                                    <option value="video" x-text="hasSingleVideoAttached ? 'Video' : (hasSingleMediaAttached ? 'Post' : 'Post')"></option>
                                     <option value="reel" :hidden="!hasSingleVideoAttached" :disabled="!hasSingleVideoAttached">Reel</option>
-                                    <option value="story" x-text="hasSingleMediaAttached ? 'Historia' : 'Historias (una por archivo)'"></option>
+                                    <option value="story" x-text="hasSingleMediaAttached ? 'Historia' : 'Historias'"></option>
                                 </select>
                             </div>
-                            <p x-show="facebookPostType === 'reel'" class="text-[11px] text-stone-400 pl-8">Reel: video vertical de 3 a 90 segundos.</p>
-                            <p x-show="facebookPostType === 'story'" class="text-[11px] text-stone-400 pl-8"><span x-show="!hasSingleMediaAttached">Se publica una historia por archivo, en el orden en que están adjuntos. </span>Dura 24 horas, sin texto ni stickers. Usa 9:16.</p>
-                            <div x-show="facebookPostType === 'reel'" class="pl-8">
+                            <p x-show="facebookPostType === 'reel'" class="text-[10px] text-stone-400 pl-6">Video vertical, 3-90s</p>
+                            <p x-show="facebookPostType === 'story'" class="text-[10px] text-stone-400 pl-6">24h, sin texto. 9:16</p>
+                            <div x-show="facebookPostType === 'reel'" class="pl-6">
                                 {% include "composer/partials/reel_cover_picker.html" %}
                             </div>
                         </div>
                     </template>
 
-                    <!-- Instagram rows -->
+                    <!-- Instagram rows (compact) -->
                     <template x-for="accId in selectedAccounts" :key="'instagram-cover-' + accId">
                         <div x-show="['instagram', 'instagram_login'].includes(charLimits[accId]?.platform) && hasMediaAttached"
                              x-data="{ igPostType: platformExtras[accId]?.post_type === 'story' ? 'story' : '' }"
-                             class="px-4 py-3 space-y-2">
+                             class="px-3 py-2 space-y-1.5">
                             <input type="hidden" :name="'ig_panel_' + accId" value="1"
                                    :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
-                            <div class="flex items-center gap-3">
-                                <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center flex-shrink-0"
+                            <div class="flex items-center gap-2">
+                                <span class="platform-icon w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
                                       :class="'pi-' + (charLimits[accId]?.platform || '')"
                                       x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                                <span class="flex-1 min-w-0 truncate text-sm font-medium text-stone-700" x-text="charLimits[accId]?.name"></span>
+                                <span class="flex-1 min-w-0 truncate text-[13px] font-medium text-stone-600" x-text="charLimits[accId]?.name"></span>
                                 <select :name="'ig_post_type_' + accId"
                                         x-model="igPostType"
                                         :disabled="!['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)"
-                                        class="w-48 text-sm px-3 py-1.5 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                    <option value="" x-text="hasSingleVideoAttached ? 'Reel' : (hasSingleMediaAttached ? 'Publicación' : 'Carrusel')"></option>
-                                    <option value="story" x-text="hasSingleMediaAttached ? 'Historia' : 'Historias (una por archivo)'"></option>
+                                        class="text-[13px] px-2 py-1 rounded-md border border-stone-200 bg-white outline-none focus:border-orange-500 transition-all">
+                                    <option value="" x-text="hasSingleVideoAttached ? 'Reel' : (hasSingleMediaAttached ? 'Post' : 'Carrusel')"></option>
+                                    <option value="story" x-text="hasSingleMediaAttached ? 'Historia' : 'Historias'"></option>
                                 </select>
                             </div>
-                            <p x-show="igPostType === 'story'" class="text-[11px] text-stone-400 pl-8"><span x-show="!hasSingleMediaAttached">Se publica una historia por archivo, en el orden en que están adjuntos. </span>Dura 24 horas, sin texto, stickers ni música. Usa 9:16.</p>
+                            <p x-show="igPostType === 'story'" class="text-[10px] text-stone-400 pl-6">24h, sin texto. 9:16</p>
                             <template x-if="hasSingleVideoAttached && igPostType !== 'story' && ['instagram', 'instagram_login'].includes(charLimits[accId]?.platform)">
-                                <div class="pl-8">
+                                <div class="pl-6">
                                     {% include "composer/partials/reel_cover_picker.html" %}
                                 </div>
                             </template>
@@ -1249,9 +1244,9 @@
                     </div>
                 </template>
 
-                <!-- First Comment (conditional - only when a platform supporting comments is selected) -->
+                <!-- First Comment -->
                 <div x-show="anyPlatformSupportsFirstComment" x-transition x-cloak>
-                    <label class="block text-sm font-semibold text-stone-500 uppercase tracking-wider mb-2">Primer comentario</label>
+                    <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">Primer comentario</label>
                     <textarea name="first_comment"
                               class="comment-editor"
                               placeholder="Primer comentario que se publica después de la publicación principal…"
@@ -1265,7 +1260,7 @@
                 <!-- Content Category -->
                 {% if categories %}
                 <div>
-                    <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Categoría</label>
+                    <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">Categoría</label>
                     <select name="category"
                             class="w-full text-sm px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-700 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all duration-150">
                         <option value="">Sin categoría</option>
@@ -1279,9 +1274,9 @@
                 </div>
                 {% endif %}
 
-                <hr class="border-stone-200">
+                <hr class="border-stone-100">
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
                 <!-- Tags (dropdown with search & create) -->
                 <div class="relative" x-data="{
                     tags: {{ post.tags|json_attr }},
@@ -1323,9 +1318,9 @@
                         });
                     },
                 }" @click.away="tagDropdownOpen = false">
-                    <div class="flex items-center gap-2 mb-2">
-                        <label class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Etiquetas</label>
-                        <span class="text-[10px] font-semibold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Solo para el equipo interno</span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <label class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Etiquetas</label>
+                        <span class="text-[9px] font-semibold text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Equipo</span>
                     </div>
                     <input type="hidden" name="tags" :value="tags.join(',')">
 
@@ -1426,9 +1421,9 @@
                 <!-- Internal Notes (hidden from client/viewer roles) -->
                 {% if can_view_internal_notes %}
                 <div>
-                    <div class="flex items-center gap-2 mb-2">
-                        <label class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Notas</label>
-                        <span class="text-[10px] font-semibold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Solo para el equipo interno</span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <label class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Notas</label>
+                        <span class="text-[9px] font-semibold text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Equipo</span>
                     </div>
                     <textarea name="internal_notes"
                               class="w-full text-sm font-normal px-4 py-3 rounded-xl border border-dashed border-stone-200 bg-stone-50/80 text-stone-600 outline-none focus:border-stone-300 transition-all duration-150 resize-none"
@@ -1439,30 +1434,28 @@
                 </div>
             </div>
 
-            <!-- ── Action Bar ─────────────────────────────────────── -->
+            <!-- ── Action Bar (simplified: status left, primary CTA right) ── -->
             <div class="action-bar">
-                {% if is_edit %}
-                <!-- Delete Post -->
-                <button type="button" @click="$dispatch('open-delete-modal')"
-                        class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-2 text-sm font-semibold text-red-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all duration-150 cursor-pointer flex-shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    <span class="hidden sm:inline">Eliminar</span>
-                </button>
-                {% endif %}
-
-                <!-- Autosave indicator -->
-                <div id="autosave-status" class="text-xs text-stone-400 mr-auto hidden sm:flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-stone-300" :class="{ 'bg-emerald-400': lastSaved }"></span>
-                    <span x-text="lastSaved ? 'Guardado ' + lastSaved : 'Sin guardar'"></span>
+                <!-- Left: status + secondary actions -->
+                <div class="flex items-center gap-2 mr-auto">
+                    {% if is_edit %}
+                    <button type="button" @click="$dispatch('open-delete-modal')"
+                            class="inline-flex items-center gap-1 px-2 py-1.5 text-xs font-semibold text-red-500 hover:text-red-600 rounded-md hover:bg-red-50 transition-all cursor-pointer flex-shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        <span class="hidden sm:inline">Eliminar</span>
+                    </button>
+                    {% endif %}
+                    <div class="text-xs text-stone-400 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-stone-300" :class="{ 'bg-emerald-400': lastSaved }"></span>
+                        <span x-text="lastSaved ? lastSaved : 'Sin guardar'"></span>
+                    </div>
                 </div>
-                <div class="mr-auto sm:hidden"></div>
 
+                <!-- Right: actions -->
                 {% if not post_is_readonly %}
-                <!-- Save Draft -->
                 <button type="submit" name="action" value="save_draft"
-                        class="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 text-sm font-semibold text-stone-600 hover:text-stone-800 rounded-lg hover:bg-stone-100 transition-all duration-150 cursor-pointer flex-shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                    <span class="hidden sm:inline">Guardar borrador</span>
+                        class="inline-flex items-center gap-1 px-3 py-2 text-[13px] font-semibold text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-100 transition-all cursor-pointer flex-shrink-0">
+                    Borrador
                 </button>
                 {% endif %}
 
@@ -1470,10 +1463,8 @@
                 <button type="submit" name="action" value="submit_for_approval"
                         :disabled="selectedAccounts.length === 0"
                         :class="selectedAccounts.length === 0 && 'opacity-50 cursor-not-allowed'"
-                        class="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 text-sm font-semibold text-orange-600 hover:text-orange-700 rounded-lg hover:bg-orange-50 transition-all duration-150 cursor-pointer flex-shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span class="hidden sm:inline">Enviar a aprobación</span>
-                    <span class="sm:hidden">Para aprobación</span>
+                        class="inline-flex items-center gap-1 px-3 py-2 text-[13px] font-semibold text-orange-600 hover:text-orange-700 rounded-lg hover:bg-orange-50 transition-all cursor-pointer flex-shrink-0">
+                    Enviar a aprobación
                 </button>
                 {% endif %}
 
@@ -1481,9 +1472,8 @@
                 <button type="submit" name="action" value="resubmit_for_approval"
                         :disabled="selectedAccounts.length === 0"
                         :class="selectedAccounts.length === 0 && 'opacity-50 cursor-not-allowed'"
-                        class="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 text-sm font-semibold text-orange-600 hover:text-orange-700 rounded-lg hover:bg-orange-50 transition-all duration-150 cursor-pointer flex-shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
-                    <span class="hidden sm:inline">Reenviar</span>
+                        class="inline-flex items-center gap-1 px-3 py-2 text-[13px] font-semibold text-orange-600 hover:text-orange-700 rounded-lg hover:bg-orange-50 transition-all cursor-pointer flex-shrink-0">
+                    Reenviar
                 </button>
                 {% endif %}
 
