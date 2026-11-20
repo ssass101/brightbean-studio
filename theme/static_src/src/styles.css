@@ -988,3 +988,17 @@ span.flatpickr-weekday {
   font-weight: 600;
 }
 .ui-btn--danger:hover { background: #FEF2F2; }
+
+/* ============================================================
+   MARCA DE LA APP EN EL SIDEBAR (Canvas Social Manager)
+   ============================================================ */
+.sidebar-brand { text-decoration: none; transition: opacity 120ms ease; }
+.sidebar-brand:hover { opacity: 0.85; }
+.sidebar-brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28);
+}
+.sidebar-brand-text span { white-space: nowrap; }

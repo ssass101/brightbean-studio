@@ -295,6 +295,17 @@
                x-init="$el.classList.remove('sidebar-initial'); document.documentElement.classList.remove('sidebar-is-collapsed'); $nextTick(() => $el.classList.add('transition-all', 'duration-200'))"
                @click="if (window.innerWidth < 1024 && $event.target.closest('a')) { mobileMenuOpen = false }">
 
+            <!-- Marca de la app (Canvas Social Manager) -->
+            <a href="{% url 'accounts:overview' %}" class="sidebar-brand flex items-center gap-2.5 px-4 pt-4 pb-3"
+               :class="sidebarCollapsed && 'justify-center px-0'">
+                <img src="{% static 'favicon/logo-sm.png' %}" alt="Social Manager"
+                     class="sidebar-brand-logo flex-shrink-0">
+                <span class="sidebar-brand-text min-w-0" x-show="!sidebarCollapsed" x-cloak>
+                    <span class="block font-extrabold text-[0.9375rem] leading-none tracking-tight text-stone-900">Canvas</span>
+                    <span class="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400 mt-1">Social Manager</span>
+                </span>
+            </a>
+
             <!-- Workspace switcher (top of sidebar) -->
             <div class="relative border-b border-stone-100" x-data="{ wsOpen: false }">
                 <button @click="wsOpen = !wsOpen"
