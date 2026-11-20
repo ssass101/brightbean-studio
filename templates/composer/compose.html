@@ -33,8 +33,9 @@
             transform: none; transition: none;
             box-shadow: none;
         }
-        /* Preview sits right beside the editor; leftover width collects at the far edge, not between them */
-        #preview-panel { max-width: 460px; margin: 0; width: 100%; }
+        /* Preview sits right beside the editor; leftover width collects at the far edge, not between them.
+           El ancho real lo fija el wrapper con marco (max-width:420px, margin:0); el #preview-panel solo lo llena. */
+        #preview-panel { width: 100%; }
         .panel-right > div:first-child { max-width: 460px; }
     }
     .panel-right-backdrop {
@@ -1876,7 +1877,9 @@
              Grid) la dibuja el partial UNA sola vez y queda siempre visible; debajo
              se muestra el preview de publicación o el grid según previewMode. -->
         <div class="flex-1 overflow-y-auto px-4 pb-4 panel-scroll">
-            <div class="rounded-xl overflow-hidden border border-stone-200 bg-white" style="max-width:380px;margin:0 auto;">
+            <!-- Alineado a la izquierda (pegado al editor), no centrado: con el panel
+                 ancho un marco centrado quedaba flotando con un hueco al costado. -->
+            <div class="rounded-xl overflow-hidden border border-stone-200 bg-white" style="max-width:420px;margin:0;">
 
                 <!-- El partial trae la barra de pestañas (siempre visible) y, debajo,
                      las tarjetas de preview que solo se ven en modo 'post'. -->
