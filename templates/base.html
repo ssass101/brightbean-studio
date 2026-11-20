@@ -501,7 +501,7 @@
                                                 </div>
                                                 <template x-for="tag in filteredCreateTags" :key="tag">
                                                     <label>
-                                                        <input type="checkbox" class="rounded accent-orange-500"
+                                                        <input type="checkbox" class="rounded accent-blue-600"
                                                                :checked="createSelectedTags.includes(tag)"
                                                                @change="toggleCreateTag(tag)">
                                                         <span x-text="tag"></span>
@@ -522,7 +522,7 @@
                                                 <div class="border-t border-stone-100 px-1 py-1">
                                                     <button type="button" @click="createTagDropdownOpen = false; showCreateTagModal = true; newTagName = createTagSearch; createTagSearch = ''; $nextTick(() => $refs.sidebarNewTagNameInput.focus())"
                                                             class="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-stone-600 hover:bg-stone-50 rounded-md cursor-pointer transition-colors">
-                                                        <svg class="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                                         Crear nueva etiqueta
                                                     </button>
                                                 </div>
@@ -635,7 +635,7 @@
                             <h3 class="text-base font-semibold text-stone-800 mb-4">Crear nueva etiqueta</h3>
                             <input type="text" x-ref="sidebarNewTagNameInput" x-model="newTagName"
                                    @keydown.enter.prevent="createTagFromModal()"
-                                   class="w-full text-sm px-3 py-2.5 rounded-xl border border-stone-200 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
+                                   class="w-full text-sm px-3 py-2.5 rounded-xl border border-stone-200 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                                    placeholder="Nombre de la etiqueta...">
                             <div class="flex justify-end gap-2 mt-4">
                                 <button type="button" @click="closeCreateTagModal()"
@@ -762,7 +762,7 @@
                     {% else %}<span class="sidebar-nav-label truncate flex-1 text-stone-400 opacity-60">{{ channel.account_name|default:channel.account_handle }}</span>{% endif %}
                     <form method="post" action="{% url 'social_accounts:reconnect' workspace_id=request.workspace.id account_id=channel.id %}" class="sidebar-nav-label">
                         {% csrf_token %}
-                        <button type="submit" class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold text-orange-700 bg-orange-50 rounded-full hover:bg-orange-100 transition-colors cursor-pointer" title="Reconnect {{ channel.account_name|default:channel.account_handle }}">
+                        <button type="submit" class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold text-blue-700 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors cursor-pointer" title="Reconnect {{ channel.account_name|default:channel.account_handle }}">
                             Reconectar
                         </button>
                     </form>

@@ -54,7 +54,7 @@ tear down the toast.
             <div class="w-px h-5 bg-stone-700"></div>
             <button hx-post="{% url 'approvals:bulk_action' workspace_id=workspace.id %}"
                     hx-include="[name='post_ids']" hx-vals='{"action": "approve"}' hx-swap="none"
-                    class="px-3.5 py-1.5 text-[0.8125rem] font-semibold rounded-full bg-emerald-500 hover:bg-emerald-600 text-white">Aprobar todo</button>
+                    class="ui-btn ui-btn--primary ui-btn--sm">Aprobar todo</button>
             <button @click="rejectOpen = true"
                     class="px-3.5 py-1.5 text-[0.8125rem] font-semibold rounded-full bg-red-500 hover:bg-red-600 text-white">Rechazar todo</button>
             <button @click="selectedPosts = []" class="ml-1 text-stone-400 hover:text-white">
