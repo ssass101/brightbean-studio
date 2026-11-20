@@ -210,8 +210,8 @@ body {
 /* ── Panel de canales / conectar (variante C) ── */
 .sidebar-chan-panel {
   margin: 20px 12px 0;
-  background: var(--surface-1);
-  border: 1px solid var(--border-soft, #EEF0F2);
+  background: var(--neutral-100);
+  border: 1px solid var(--neutral-200);
   border-radius: 12px;
   padding: 6px;
 }
