@@ -2438,6 +2438,49 @@ def tiktok_creator_info(request, workspace_id, account_id):
 
 
 @login_required
+@require_GET
+def instagram_grid(request, workspace_id, account_id):
+    """Render the real Instagram feed (profile header + recent media) for the
+    composer preview's "Grid" tab. Cached briefly per account to avoid hitting
+    the Graph API on every preview open."""
+    workspace = _get_workspace(request, workspace_id)
+    account = get_object_or_404(
+        SocialAccount, id=account_id, workspace=workspace, platform__in=["instagram", "instagram_login"]
+    )
+
+    cache_key = f"ig_grid:{account.id}:v1"
+    data = cache.get(cache_key)
+    if data is None:
+        from apps.publisher.engine import _resolve_publish_credentials
+        from providers import get_provider
+
+        try:
+            credentials = _resolve_publish_credentials(account)
+            provider = get_provider(account.platform, credentials)
+            access_token = account.oauth_access_token
+            if account.token_expires_at and account.is_token_expiring_soon:
+                try:
+                    access_token = account.refresh_oauth_token(provider, enqueue_backfill=False)
+                except Exception:
+                    access_token = account.oauth_access_token
+            data = provider.get_profile_grid(access_token, limit=12)
+            cache.set(cache_key, data, 300)  # 5 min
+        except Exception as exc:
+            logger.info("Instagram grid unavailable for account %s: %s", account.id, type(exc).__name__)
+            return render(
+                request,
+                "composer/partials/instagram_grid.html",
+                {"account": account, "error": True},
+            )
+
+    return render(
+        request,
+        "composer/partials/instagram_grid.html",
+        {"account": account, "profile": data.get("profile", {}), "media": data.get("media", [])},
+    )
+
+
+@login_required
 @require_permission("create_posts")
 @require_POST
 def attach_media(request, workspace_id, post_id):

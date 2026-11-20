@@ -923,3 +923,58 @@ class InstagramProvider(SocialProvider):
         except APIError as exc:
             logger.debug("Instagram media fields unavailable for %s: %s", media_id, exc)
             return {}
+
+    def get_profile_grid(self, access_token: str, limit: int = 12) -> dict:
+        """Fetch the profile header + recent media to render a feed mockup.
+
+        Returns a dict with ``profile`` (username, name, picture, counts) and
+        ``media`` (list of recent posts with their display URL). Raises the
+        usual provider errors (APIError / TokenExpiredError) so the caller can
+        map them to a reconnect/empty state.
+        """
+        ig_user_id = self._get_ig_user_id(access_token)
+        profile = self._get_profile_fields(access_token, ig_user_id) or {}
+
+        resp = self._request(
+            "GET",
+            f"{BASE_URL}/{ig_user_id}/media",
+            access_token=access_token,
+            params={
+                "fields": "id,caption,media_type,media_product_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count",
+                "limit": limit,
+            },
+        )
+        items = resp.json().get("data", []) if resp is not None else []
+
+        media = []
+        for item in items:
+            # Videos/Reels have no media_url image; use the thumbnail for the grid tile.
+            is_video = item.get("media_type") == "VIDEO"
+            display = item.get("thumbnail_url") if is_video else item.get("media_url")
+            if not display:
+                display = item.get("thumbnail_url") or item.get("media_url")
+            media.append(
+                {
+                    "id": item.get("id"),
+                    "display_url": display,
+                    "permalink": item.get("permalink"),
+                    "is_video": is_video,
+                    "is_reel": item.get("media_product_type") == "REELS",
+                    "is_carousel": item.get("media_type") == "CAROUSEL_ALBUM",
+                    "like_count": item.get("like_count"),
+                    "comments_count": item.get("comments_count"),
+                    "caption": item.get("caption", ""),
+                    "timestamp": item.get("timestamp"),
+                }
+            )
+
+        return {
+            "profile": {
+                "username": profile.get("username", ""),
+                "name": profile.get("name", ""),
+                "profile_picture_url": profile.get("profile_picture_url", ""),
+                "followers_count": profile.get("followers_count"),
+                "media_count": profile.get("media_count"),
+            },
+            "media": media,
+        }
