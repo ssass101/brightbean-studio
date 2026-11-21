@@ -1,9 +1,4 @@
-{% comment %}
-Minipanel de métricas sobre el calendario. Reusa la lógica de Analítica
-(alcance, interacciones, balance de seguidores) de los últimos 30 días para la
-cuenta elegida. Selector de cuenta a la derecha. Enlace a la analítica completa.
-Context: metrics_panel = {accounts, account, cards, followers, days}
-{% endcomment %}
+{% comment %}Minipanel de métricas sobre el calendario. Reusa la lógica de Analítica (alcance, interacciones, balance de seguidores) de los últimos 30 días para la cuenta elegida. Context: metrics_panel = {accounts, account, cards, followers, followers_spark, days}{% endcomment %}
 {% if metrics_panel and metrics_panel.account %}
 <div class="mp-panel" x-data="{ open: false }">
   <div class="mp-head">
@@ -15,7 +10,6 @@ Context: metrics_panel = {accounts, account, cards, followers, days}
 
     <div class="mp-head-right">
       {% if metrics_panel.accounts|length > 1 %}
-      {# Selector de cuenta #}
       <div class="mp-select-wrap" @click.away="open = false">
         <button type="button" class="mp-select" @click="open = !open">
           {% include "partials/_platform_icon.html" with platform=metrics_panel.account.platform size="sm" %}
@@ -45,35 +39,39 @@ Context: metrics_panel = {accounts, account, cards, followers, days}
   </div>
 
   <div class="mp-grid">
-    {# Alcance e Interacciones (hero cards) #}
+    {# Alcance — azul pleno (métrica estrella) #}
     {% for card in metrics_panel.cards %}
-    <div class="mp-stat">
-      <div class="mp-stat-label">{{ card.label }}</div>
-      <div class="mp-stat-row">
-        <span class="mp-stat-value">{{ card.derived.value|floatformat:"0" }}</span>
+    <div class="mp-stat {% if forloop.first %}blue{% else %}dark{% endif %}">
+      <div class="mp-stat-top">
+        <span class="mp-stat-label">{{ card.label }}</span>
         {% if card.derived.delta %}
         <span class="mp-delta {% if card.derived.delta > 0 %}up{% elif card.derived.delta < 0 %}down{% endif %}">
-          {% if card.derived.delta > 0 %}▲{% elif card.derived.delta < 0 %}▼{% endif %}
-          {{ card.derived.delta|floatformat:"0" }}%
+          {% if card.derived.delta > 0 %}↑{% elif card.derived.delta < 0 %}↓{% endif %}{{ card.derived.delta|floatformat:"0" }}%
         </span>
         {% endif %}
       </div>
+      <div class="mp-stat-value">{{ card.derived.value|floatformat:"0" }}</div>
+      {% if card.spark %}
+      <svg class="mp-spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline points="{{ card.spark }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      {% endif %}
     </div>
     {% endfor %}
 
-    {# Balance de seguidores #}
+    {# Balance de seguidores — clara #}
     {% if metrics_panel.followers %}
-    <div class="mp-stat">
-      <div class="mp-stat-label">Balance de seguidores</div>
-      <div class="mp-stat-row">
-        <span class="mp-stat-value">{% if metrics_panel.followers.value > 0 %}+{% endif %}{{ metrics_panel.followers.value|floatformat:"0" }}</span>
+    <div class="mp-stat light">
+      <div class="mp-stat-top">
+        <span class="mp-stat-label">Balance de seguidores</span>
         {% if metrics_panel.followers.delta %}
         <span class="mp-delta {% if metrics_panel.followers.delta > 0 %}up{% elif metrics_panel.followers.delta < 0 %}down{% endif %}">
-          {% if metrics_panel.followers.delta > 0 %}▲{% elif metrics_panel.followers.delta < 0 %}▼{% endif %}
-          {{ metrics_panel.followers.delta|floatformat:"0" }}%
+          {% if metrics_panel.followers.delta > 0 %}↑{% elif metrics_panel.followers.delta < 0 %}↓{% endif %}{{ metrics_panel.followers.delta|floatformat:"0" }}%
         </span>
         {% endif %}
       </div>
+      <div class="mp-stat-value">{% if metrics_panel.followers.value > 0 %}+{% endif %}{{ metrics_panel.followers.value|floatformat:"0" }}</div>
+      {% if metrics_panel.followers_spark %}
+      <svg class="mp-spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline points="{{ metrics_panel.followers_spark }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      {% endif %}
     </div>
     {% endif %}
   </div>
@@ -87,7 +85,6 @@ Context: metrics_panel = {accounts, account, cards, followers, days}
   .mp-range{font-size:11px;font-weight:600;color:var(--neutral-400,#A8A29E);text-transform:uppercase;letter-spacing:.06em;margin-left:2px;}
   .mp-head-right{display:flex;align-items:center;gap:10px;}
 
-  /* Selector de cuenta */
   .mp-select-wrap{position:relative;}
   .mp-select{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:9px;border:1px solid var(--neutral-200,#E7E5E4);background:#fff;font-size:12.5px;font-weight:600;color:var(--neutral-800,#292524);cursor:pointer;transition:border-color .12s,background .12s;}
   .mp-select:hover{border-color:var(--neutral-300,#D6D3D1);background:var(--neutral-50,#FAFAF9);}
@@ -104,19 +101,39 @@ Context: metrics_panel = {accounts, account, cards, followers, days}
   .mp-link:hover{color:var(--brand-700,#1E40AF);}
   .mp-link svg{width:13px;height:13px;}
 
-  /* Grilla de métricas */
+  /* Grilla de métricas con jerarquía de color (como los KPIs del dashboard) */
   .mp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-  .mp-stat{background:var(--neutral-50,#FAFAF9);border:1px solid var(--neutral-100,#F5F5F4);border-radius:12px;padding:13px 15px;}
-  .mp-stat-label{font-size:11px;font-weight:600;color:var(--neutral-500,#78716C);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;}
-  .mp-stat-row{display:flex;align-items:baseline;gap:9px;}
-  .mp-stat-value{font-family:var(--font-display,'Plus Jakarta Sans','Inter',sans-serif);font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--neutral-900,#1C1917);line-height:1;}
-  .mp-delta{font-size:11.5px;font-weight:700;color:var(--neutral-400,#A8A29E);}
-  .mp-delta.up{color:#16A34A;}
-  .mp-delta.down{color:#DC2626;}
+  .mp-stat{position:relative;overflow:hidden;border-radius:14px;padding:15px 17px;border:1px solid transparent;}
+  .mp-stat-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;position:relative;z-index:1;}
+  .mp-stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+  .mp-stat-value{font-family:var(--font-display,'Plus Jakarta Sans','Inter',sans-serif);font-size:30px;font-weight:800;letter-spacing:-.025em;line-height:1;position:relative;z-index:1;}
 
-  @media (max-width:640px){
-    .mp-grid{grid-template-columns:1fr;}
-    .mp-head-right{width:100%;justify-content:space-between;}
-  }
+  /* Variante azul (Alcance) */
+  .mp-stat.blue{background:var(--primary,#2563EB);}
+  .mp-stat.blue .mp-stat-label{color:#BFDBFE;}
+  .mp-stat.blue .mp-stat-value{color:#fff;}
+  /* Variante oscura (Interacciones / Vistas) */
+  .mp-stat.dark{background:#1E2430;}
+  .mp-stat.dark .mp-stat-label{color:#8B97A8;}
+  .mp-stat.dark .mp-stat-value{color:#fff;}
+  /* Variante clara (Seguidores) */
+  .mp-stat.light{background:var(--neutral-50,#FAFAF9);border-color:var(--neutral-200,#E7E5E4);}
+  .mp-stat.light .mp-stat-label{color:var(--neutral-500,#78716C);}
+  .mp-stat.light .mp-stat-value{color:var(--neutral-900,#1C1917);}
+
+  /* Tendencia (pill) */
+  .mp-delta{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;}
+  .mp-stat.blue .mp-delta,.mp-stat.dark .mp-delta{background:rgba(255,255,255,.16);color:#fff;}
+  .mp-stat.light .mp-delta.up{background:#DCFCE7;color:#15803D;}
+  .mp-stat.light .mp-delta.down{background:#FEE2E2;color:#B91C1C;}
+  .mp-stat.light .mp-delta{background:var(--neutral-100,#F5F5F4);color:var(--neutral-500,#78716C);}
+
+  /* Sparkline de fondo, abajo */
+  .mp-spark{position:absolute;left:0;right:0;bottom:0;width:100%;height:30px;}
+  .mp-stat.blue .mp-spark{color:rgba(255,255,255,.4);}
+  .mp-stat.dark .mp-spark{color:rgba(255,255,255,.28);}
+  .mp-stat.light .mp-spark{color:rgba(37,99,235,.35);}
+
+  @media (max-width:640px){.mp-grid{grid-template-columns:1fr;}.mp-head-right{width:100%;justify-content:space-between;}}
 </style>
 {% endif %}

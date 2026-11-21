@@ -693,6 +693,23 @@ def _get_tab_context(request, workspace, tab: str) -> dict:
 METRICS_PANEL_DAYS = 30
 
 
+def _sparkline_points(series, width=100, height=28):
+    """Convierte una serie diaria (con posibles None) en puntos 'x,y x,y …'
+    para un <polyline> SVG. Devuelve '' si no hay suficientes datos."""
+    vals = [float(v) for v in (series or []) if v is not None]
+    if len(vals) < 2:
+        return ""
+    lo, hi = min(vals), max(vals)
+    span = (hi - lo) or 1.0
+    n = len(vals)
+    pts = []
+    for i, v in enumerate(vals):
+        x = (i / (n - 1)) * width
+        y = height - ((v - lo) / span) * height
+        pts.append(f"{x:.1f},{y:.1f}")
+    return " ".join(pts)
+
+
 def _calendar_metrics_panel(request, workspace):
     """Minipanel de métricas (alcance, interacciones, seguidores) sobre el
     calendario, reusando la lógica de la sección Analítica.
@@ -729,10 +746,14 @@ def _calendar_metrics_panel(request, workspace):
 
         bundle = analytics_services.account_analytics_bundle(account, METRICS_PANEL_DAYS)
         hero = analytics_services.hero_cards(account, METRICS_PANEL_DAYS, bundle=bundle)
-        # Tomamos las dos primeras métricas "reach-like" como Alcance e Interacciones
-        # (la primera suele ser reach/impressions; engagement entra en la segunda).
-        panel["cards"] = hero[:2]
-        panel["followers"] = analytics_services.follower_growth(account, METRICS_PANEL_DAYS, bundle=bundle)
+        # Dos primeras métricas "reach-like" (alcance / interacciones-vistas).
+        cards = hero[:2]
+        for c in cards:
+            c["spark"] = _sparkline_points(getattr(c["derived"], "series", None))
+        panel["cards"] = cards
+        followers = analytics_services.follower_growth(account, METRICS_PANEL_DAYS, bundle=bundle)
+        panel["followers"] = followers
+        panel["followers_spark"] = _sparkline_points(getattr(followers, "series", None)) if followers else ""
     except Exception:
         # Nunca romper el calendario por la analítica.
         return {"accounts": panel.get("accounts", []), "account": panel.get("account"), "cards": [], "followers": None, "days": METRICS_PANEL_DAYS}
