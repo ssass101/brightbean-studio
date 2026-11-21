@@ -44,13 +44,12 @@
     <div class="mp-stat {% if forloop.first %}blue{% else %}dark{% endif %}">
       <div class="mp-stat-top">
         <span class="mp-stat-label">{{ card.label }}</span>
-        {% if card.derived.delta %}
-        <span class="mp-delta {% if card.derived.delta > 0 %}up{% elif card.derived.delta < 0 %}down{% endif %}">
-          {% if card.derived.delta > 0 %}↑{% elif card.derived.delta < 0 %}↓{% endif %}{{ card.derived.delta|floatformat:"0" }}%
+        <span class="mp-delta {% if card.derived.delta > 0 %}up{% elif card.derived.delta < 0 %}down{% else %}flat{% endif %}">
+          {% if card.derived.delta > 0 %}↑{% elif card.derived.delta < 0 %}↓{% else %}→{% endif %}{{ card.derived.delta|floatformat:"0" }}%
         </span>
-        {% endif %}
       </div>
       <div class="mp-stat-value">{{ card.derived.value|floatformat:"0" }}</div>
+      <div class="mp-stat-foot">vs. mes anterior</div>
       {% if card.spark %}
       <svg class="mp-spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline points="{{ card.spark }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
       {% endif %}
@@ -62,13 +61,12 @@
     <div class="mp-stat light">
       <div class="mp-stat-top">
         <span class="mp-stat-label">Balance de seguidores</span>
-        {% if metrics_panel.followers.delta %}
-        <span class="mp-delta {% if metrics_panel.followers.delta > 0 %}up{% elif metrics_panel.followers.delta < 0 %}down{% endif %}">
-          {% if metrics_panel.followers.delta > 0 %}↑{% elif metrics_panel.followers.delta < 0 %}↓{% endif %}{{ metrics_panel.followers.delta|floatformat:"0" }}%
+        <span class="mp-delta {% if metrics_panel.followers.delta > 0 %}up{% elif metrics_panel.followers.delta < 0 %}down{% else %}flat{% endif %}">
+          {% if metrics_panel.followers.delta > 0 %}↑{% elif metrics_panel.followers.delta < 0 %}↓{% else %}→{% endif %}{{ metrics_panel.followers.delta|floatformat:"0" }}%
         </span>
-        {% endif %}
       </div>
       <div class="mp-stat-value">{% if metrics_panel.followers.value > 0 %}+{% endif %}{{ metrics_panel.followers.value|floatformat:"0" }}</div>
+      <div class="mp-stat-foot">vs. mes anterior</div>
       {% if metrics_panel.followers_spark %}
       <svg class="mp-spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline points="{{ metrics_panel.followers_spark }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
       {% endif %}
@@ -107,6 +105,7 @@
   .mp-stat-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;position:relative;z-index:1;}
   .mp-stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
   .mp-stat-value{font-family:var(--font-display,'Plus Jakarta Sans','Inter',sans-serif);font-size:30px;font-weight:800;letter-spacing:-.025em;line-height:1;position:relative;z-index:1;}
+  .mp-stat-foot{font-size:10.5px;font-weight:600;margin-top:5px;position:relative;z-index:1;text-transform:none;letter-spacing:0;}
 
   /* Variante azul (Alcance) */
   .mp-stat.blue{background:var(--primary,#2563EB);}
@@ -126,7 +125,12 @@
   .mp-stat.blue .mp-delta,.mp-stat.dark .mp-delta{background:rgba(255,255,255,.16);color:#fff;}
   .mp-stat.light .mp-delta.up{background:#DCFCE7;color:#15803D;}
   .mp-stat.light .mp-delta.down{background:#FEE2E2;color:#B91C1C;}
-  .mp-stat.light .mp-delta{background:var(--neutral-100,#F5F5F4);color:var(--neutral-500,#78716C);}
+  .mp-stat.light .mp-delta.flat{background:var(--neutral-100,#F5F5F4);color:var(--neutral-500,#78716C);}
+
+  /* "vs. mes anterior" bajo el número, tenue */
+  .mp-stat.blue .mp-stat-foot{color:rgba(255,255,255,.65);}
+  .mp-stat.dark .mp-stat-foot{color:rgba(255,255,255,.5);}
+  .mp-stat.light .mp-stat-foot{color:var(--neutral-400,#A8A29E);}
 
   /* Sparkline de fondo, abajo */
   .mp-spark{position:absolute;left:0;right:0;bottom:0;width:100%;height:30px;}
