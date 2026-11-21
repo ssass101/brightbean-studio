@@ -58,6 +58,8 @@
   .ov-kpi.blue .l{color:#DBEAFE;}
 
   /* Grid de clientes */
+  .ov-clients-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px;flex-wrap:wrap;}
+  .ov-clients-hint{font-size:12px;color:var(--text-tertiary,#A8A29E);font-weight:500;}
   .ov-clients{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;}
   .ov-card{background:#FFFFFF;border:1px solid var(--neutral-200,#E7E5E4);border-radius:16px;overflow:hidden;box-shadow:0 1px 2px rgba(23,20,18,.04),0 1px 3px rgba(23,20,18,.06);transition:box-shadow .18s,border-color .18s,transform .18s;}
   .ov-card:hover{box-shadow:0 6px 20px rgba(23,20,18,.08);border-color:var(--neutral-300,#D6D3D1);}
@@ -100,7 +102,7 @@
 <div class="ov-band ov-hero">
   <div class="ov-hero-wrap">
     <h1>Resumen de cuentas</h1>
-    <p>Publicaciones programadas por delante en cada cuenta. Los clientes que necesitan contenido aparecen primero.</p>
+    <p>El panorama de todos tus clientes. Elegí uno para entrar a su calendario y empezar a trabajar — los que necesitan contenido aparecen primero.</p>
   </div>
 </div>
 
@@ -145,7 +147,10 @@
   </div>
 
   <!-- Clientes -->
-  <div class="ov-label">Clientes</div>
+  <div class="ov-clients-head">
+    <span class="ov-label" style="margin:0;">Clientes</span>
+    <span class="ov-clients-hint">Tocá un cliente para entrar a su calendario</span>
+  </div>
   <div class="ov-clients">
     {% for row in rows %}
     <section class="ov-card">
