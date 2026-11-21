@@ -689,6 +689,57 @@ def _get_tab_context(request, workspace, tab: str) -> dict:
     }
 
 
+# Días del minipanel de métricas sobre el calendario.
+METRICS_PANEL_DAYS = 30
+
+
+def _calendar_metrics_panel(request, workspace):
+    """Minipanel de métricas (alcance, interacciones, seguidores) sobre el
+    calendario, reusando la lógica de la sección Analítica.
+
+    Devuelve siempre un dict con al menos ``accounts`` (para el selector) y
+    ``account`` (la elegida), y ``cards``/``followers`` cuando hay datos.
+    Es defensivo a propósito: si la analítica falla, el minipanel no se
+    muestra pero el calendario sigue funcionando.
+    """
+    panel = {"accounts": [], "account": None, "cards": [], "followers": None, "days": METRICS_PANEL_DAYS}
+    try:
+        from apps.analytics import services as analytics_services
+        from apps.analytics.views import _analytics_accounts, _preferred_account
+        from apps.social_accounts.models import AnalyticsPlatformConfig
+
+        enabled = AnalyticsPlatformConfig.enabled_platforms()
+        if not enabled:
+            return panel
+    except Exception:
+        return panel
+
+    try:
+        accounts = _analytics_accounts(workspace, enabled)
+        # Solo las cuentas con analítica disponible (sin veredicto de "no disponible").
+        usable = [a for a in accounts if not getattr(a, "analytics_verdict", None)]
+        panel["accounts"] = usable
+        if not usable:
+            return panel
+
+        # Cuenta elegida: la del querystring si es válida, si no la preferida.
+        requested = request.GET.get("metrics_account")
+        account = next((a for a in usable if str(a.id) == str(requested)), None) or _preferred_account(usable)
+        panel["account"] = account
+
+        bundle = analytics_services.account_analytics_bundle(account, METRICS_PANEL_DAYS)
+        hero = analytics_services.hero_cards(account, METRICS_PANEL_DAYS, bundle=bundle)
+        # Tomamos las dos primeras métricas "reach-like" como Alcance e Interacciones
+        # (la primera suele ser reach/impressions; engagement entra en la segunda).
+        panel["cards"] = hero[:2]
+        panel["followers"] = analytics_services.follower_growth(account, METRICS_PANEL_DAYS, bundle=bundle)
+    except Exception:
+        # Nunca romper el calendario por la analítica.
+        return {"accounts": panel.get("accounts", []), "account": panel.get("account"), "cards": [], "followers": None, "days": METRICS_PANEL_DAYS}
+
+    return panel
+
+
 @login_required
 def calendar_view(request, workspace_id):
     """Main publish page - renders calendar or list mode."""
@@ -777,6 +828,10 @@ def calendar_view(request, workspace_id):
         "is_today_in_view": is_today_in_view,
         **publish_ctx,
     }
+
+    # Minipanel de métricas sobre el calendario (solo con cuentas conectadas).
+    if has_connected_accounts:
+        context["metrics_panel"] = _calendar_metrics_panel(request, workspace)
 
     # For list mode: fetch the active tab's data so the shell can render the
     # initial tab inline server-side (avoids a JS-triggered HTMX waterfall and

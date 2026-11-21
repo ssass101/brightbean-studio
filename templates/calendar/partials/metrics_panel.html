@@ -1,0 +1,122 @@
+{% comment %}
+Minipanel de métricas sobre el calendario. Reusa la lógica de Analítica
+(alcance, interacciones, balance de seguidores) de los últimos 30 días para la
+cuenta elegida. Selector de cuenta a la derecha. Enlace a la analítica completa.
+Context: metrics_panel = {accounts, account, cards, followers, days}
+{% endcomment %}
+{% if metrics_panel and metrics_panel.account %}
+<div class="mp-panel" x-data="{ open: false }">
+  <div class="mp-head">
+    <div class="mp-title">
+      <svg class="mp-title-ic" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-6 4 4 7-7M21 8v5m0-5h-5"/></svg>
+      <span>Cómo viene la cuenta</span>
+      <span class="mp-range">últimos {{ metrics_panel.days }} días</span>
+    </div>
+
+    <div class="mp-head-right">
+      {% if metrics_panel.accounts|length > 1 %}
+      {# Selector de cuenta #}
+      <div class="mp-select-wrap" @click.away="open = false">
+        <button type="button" class="mp-select" @click="open = !open">
+          {% include "partials/_platform_icon.html" with platform=metrics_panel.account.platform size="sm" %}
+          <span class="mp-select-name">{{ metrics_panel.account.account_name }}</span>
+          <svg class="mp-select-chev" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div class="mp-menu" x-show="open" x-cloak>
+          {% for a in metrics_panel.accounts %}
+          <a href="?{% if request.GET.mode %}mode={{ request.GET.mode }}&{% endif %}metrics_account={{ a.id }}"
+             class="mp-menu-item{% if a.id == metrics_panel.account.id %} active{% endif %}">
+            {% include "partials/_platform_icon.html" with platform=a.platform size="sm" %}
+            <span>{{ a.account_name }}</span>
+            {% if a.id == metrics_panel.account.id %}
+            <svg class="mp-menu-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            {% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <a href="{% url 'analytics:account' workspace_id=workspace.id account_id=metrics_panel.account.id %}" class="mp-link">
+        Ver analítica
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="mp-grid">
+    {# Alcance e Interacciones (hero cards) #}
+    {% for card in metrics_panel.cards %}
+    <div class="mp-stat">
+      <div class="mp-stat-label">{{ card.label }}</div>
+      <div class="mp-stat-row">
+        <span class="mp-stat-value">{{ card.derived.value|floatformat:"0" }}</span>
+        {% if card.derived.delta %}
+        <span class="mp-delta {% if card.derived.delta > 0 %}up{% elif card.derived.delta < 0 %}down{% endif %}">
+          {% if card.derived.delta > 0 %}▲{% elif card.derived.delta < 0 %}▼{% endif %}
+          {{ card.derived.delta|floatformat:"0" }}%
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    {# Balance de seguidores #}
+    {% if metrics_panel.followers %}
+    <div class="mp-stat">
+      <div class="mp-stat-label">Balance de seguidores</div>
+      <div class="mp-stat-row">
+        <span class="mp-stat-value">{% if metrics_panel.followers.value > 0 %}+{% endif %}{{ metrics_panel.followers.value|floatformat:"0" }}</span>
+        {% if metrics_panel.followers.delta %}
+        <span class="mp-delta {% if metrics_panel.followers.delta > 0 %}up{% elif metrics_panel.followers.delta < 0 %}down{% endif %}">
+          {% if metrics_panel.followers.delta > 0 %}▲{% elif metrics_panel.followers.delta < 0 %}▼{% endif %}
+          {{ metrics_panel.followers.delta|floatformat:"0" }}%
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .mp-panel{background:#fff;border:1px solid var(--neutral-200,#E7E5E4);border-radius:16px;box-shadow:0 1px 2px rgba(23,20,18,.04),0 1px 3px rgba(23,20,18,.05);padding:16px 18px;margin-bottom:18px;}
+  .mp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .mp-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--neutral-800,#292524);letter-spacing:-.01em;}
+  .mp-title-ic{width:16px;height:16px;color:var(--primary,#2563EB);}
+  .mp-range{font-size:11px;font-weight:600;color:var(--neutral-400,#A8A29E);text-transform:uppercase;letter-spacing:.06em;margin-left:2px;}
+  .mp-head-right{display:flex;align-items:center;gap:10px;}
+
+  /* Selector de cuenta */
+  .mp-select-wrap{position:relative;}
+  .mp-select{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:9px;border:1px solid var(--neutral-200,#E7E5E4);background:#fff;font-size:12.5px;font-weight:600;color:var(--neutral-800,#292524);cursor:pointer;transition:border-color .12s,background .12s;}
+  .mp-select:hover{border-color:var(--neutral-300,#D6D3D1);background:var(--neutral-50,#FAFAF9);}
+  .mp-select-name{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mp-select-chev{width:14px;height:14px;color:var(--neutral-400,#A8A29E);transition:transform .15s;}
+  .mp-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:20;min-width:220px;background:#fff;border:1px solid var(--neutral-200,#E7E5E4);border-radius:12px;box-shadow:0 10px 30px rgba(23,20,18,.12);padding:6px;}
+  .mp-menu-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--neutral-700,#44403C);text-decoration:none;}
+  .mp-menu-item:hover{background:var(--neutral-50,#FAFAF9);}
+  .mp-menu-item.active{color:var(--primary,#2563EB);}
+  .mp-menu-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mp-menu-check{width:15px;height:15px;color:var(--primary,#2563EB);flex-shrink:0;}
+
+  .mp-link{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;color:var(--primary,#2563EB);text-decoration:none;white-space:nowrap;}
+  .mp-link:hover{color:var(--brand-700,#1E40AF);}
+  .mp-link svg{width:13px;height:13px;}
+
+  /* Grilla de métricas */
+  .mp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .mp-stat{background:var(--neutral-50,#FAFAF9);border:1px solid var(--neutral-100,#F5F5F4);border-radius:12px;padding:13px 15px;}
+  .mp-stat-label{font-size:11px;font-weight:600;color:var(--neutral-500,#78716C);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;}
+  .mp-stat-row{display:flex;align-items:baseline;gap:9px;}
+  .mp-stat-value{font-family:var(--font-display,'Plus Jakarta Sans','Inter',sans-serif);font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--neutral-900,#1C1917);line-height:1;}
+  .mp-delta{font-size:11.5px;font-weight:700;color:var(--neutral-400,#A8A29E);}
+  .mp-delta.up{color:#16A34A;}
+  .mp-delta.down{color:#DC2626;}
+
+  @media (max-width:640px){
+    .mp-grid{grid-template-columns:1fr;}
+    .mp-head-right{width:100%;justify-content:space-between;}
+  }
+</style>
+{% endif %}
