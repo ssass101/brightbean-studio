@@ -13,8 +13,12 @@ def onboarding_checklist(request):
     if not workspace:
         return {}
 
+    # El checklist se muestra UNA vez por usuario, no una por workspace. En una
+    # agencia con 20 workspaces, cerrarlo una vez y que reapareciera en los otros
+    # 19 era puro ruido — el usuario ya sabe cómo funciona la herramienta.
+    # Si lo cerró alguna vez en algún workspace, queda cerrado para siempre.
     checklist_dismissed = OnboardingChecklist.objects.filter(
-        user=request.user, workspace=workspace, is_dismissed=True
+        user=request.user, is_dismissed=True
     ).exists()
 
     if checklist_dismissed:
