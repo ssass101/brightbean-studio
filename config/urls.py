@@ -20,6 +20,17 @@ urlpatterns = [
     # Páginas legales públicas (requeridas por TikTok/Google/Meta para la auditoría).
     path("privacy/", TemplateView.as_view(template_name="legal/privacy.html"), name="privacy"),
     path("terms/", TemplateView.as_view(template_name="legal/terms.html"), name="terms"),
+    # Verificación de dominio para TikTok Developers (URL prefix / signature file).
+    # Permite que TikTok confirme la propiedad de sm.canvasde.com para la app
+    # "Canvas Social Manager" (org Canvas Digital Experiences).
+    path(
+        "tiktokIG9wxStWuV7PQUwHD9HuCdVSVAPl83JZ.txt",
+        lambda request: __import__("django.http", fromlist=["HttpResponse"]).HttpResponse(
+            "tiktok-developers-site-verification=IG9wxStWuV7PQUwHD9HuCdVSVAPl83JZ",
+            content_type="text/plain",
+        ),
+        name="tiktok_verify",
+    ),
     path("accounts/", include("apps.accounts.urls")),
     path("accounts/", include("allauth.urls")),
     path("organizations/", include("apps.organizations.urls")),
