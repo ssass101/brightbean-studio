@@ -332,8 +332,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Google OAuth for user login/signup (separate from PLATFORM_GOOGLE_* used for publishing)
-GOOGLE_AUTH_CLIENT_ID = env("GOOGLE_AUTH_CLIENT_ID", default="")
-GOOGLE_AUTH_CLIENT_SECRET = env("GOOGLE_AUTH_CLIENT_SECRET", default="")
+GOOGLE_AUTH_CLIENT_ID = env("GOOGLE_AUTH_CLIENT_ID", default="").strip()
+GOOGLE_AUTH_CLIENT_SECRET = env("GOOGLE_AUTH_CLIENT_SECRET", default="").strip()
 
 # Unsplash stock-photo search in the composer (optional; empty disables the feature)
 UNSPLASH_ACCESS_KEY = env("UNSPLASH_ACCESS_KEY", default="")
@@ -503,20 +503,23 @@ if SENTRY_DSN:
 # Platform credentials env vars (cloud version)
 PLATFORM_INSTAGRAM_FACEBOOK_DM_SCOPES_ENABLED = env.bool("PLATFORM_INSTAGRAM_FACEBOOK_DM_SCOPES_ENABLED", default=True)
 _META_CREDENTIALS = {
-    "app_id": env("PLATFORM_FACEBOOK_APP_ID", default=""),
-    "app_secret": env("PLATFORM_FACEBOOK_APP_SECRET", default=""),
+    "app_id": env("PLATFORM_FACEBOOK_APP_ID", default="").strip(),
+    "app_secret": env("PLATFORM_FACEBOOK_APP_SECRET", default="").strip(),
     # Optional Facebook Login for Business configuration. When present Meta
     # controls the permission and business-asset selection through this config.
-    "config_id": env("PLATFORM_FACEBOOK_CONFIG_ID", default=""),
+    "config_id": env("PLATFORM_FACEBOOK_CONFIG_ID", default="").strip(),
     "human_agent_enabled": env.bool("PLATFORM_FACEBOOK_HUMAN_AGENT_ENABLED", default=False),
 }
 _GOOGLE_CREDENTIALS = {
-    "client_id": env("PLATFORM_GOOGLE_CLIENT_ID", default=""),
-    "client_secret": env("PLATFORM_GOOGLE_CLIENT_SECRET", default=""),
+    # .strip() porque al pegar en Railway suele colarse un espacio o salto de
+    # línea invisible; sin limpiar, el client_id viaja con ese carácter y Google
+    # responde "invalid_client / OAuth client was not found".
+    "client_id": env("PLATFORM_GOOGLE_CLIENT_ID", default="").strip(),
+    "client_secret": env("PLATFORM_GOOGLE_CLIENT_SECRET", default="").strip(),
 }
 _INSTAGRAM_LOGIN_CREDENTIALS = {
-    "app_id": env("PLATFORM_INSTAGRAM_APP_ID", default=""),
-    "app_secret": env("PLATFORM_INSTAGRAM_APP_SECRET", default=""),
+    "app_id": env("PLATFORM_INSTAGRAM_APP_ID", default="").strip(),
+    "app_secret": env("PLATFORM_INSTAGRAM_APP_SECRET", default="").strip(),
     "human_agent_enabled": env.bool("PLATFORM_INSTAGRAM_HUMAN_AGENT_ENABLED", default=False),
 }
 # Threads has its own app identity: a Meta app carrying the "Access the Threads
@@ -527,11 +530,11 @@ _INSTAGRAM_LOGIN_CREDENTIALS = {
 # Left unset, Threads stays unconfigured and resolves through the org's
 # admin-entered PlatformCredential row instead.
 _THREADS_CREDENTIALS = {
-    "app_id": env("PLATFORM_THREADS_APP_ID", default=""),
-    "app_secret": env("PLATFORM_THREADS_APP_SECRET", default=""),
+    "app_id": env("PLATFORM_THREADS_APP_ID", default="").strip(),
+    "app_secret": env("PLATFORM_THREADS_APP_SECRET", default="").strip(),
 }
-_LINKEDIN_LEGACY_CLIENT_ID = env("PLATFORM_LINKEDIN_CLIENT_ID", default="")
-_LINKEDIN_LEGACY_CLIENT_SECRET = env("PLATFORM_LINKEDIN_CLIENT_SECRET", default="")
+_LINKEDIN_LEGACY_CLIENT_ID = env("PLATFORM_LINKEDIN_CLIENT_ID", default="").strip()
+_LINKEDIN_LEGACY_CLIENT_SECRET = env("PLATFORM_LINKEDIN_CLIENT_SECRET", default="").strip()
 
 # LinkedIn Company always uses Community Management API scopes (the only path that
 # works for Company Pages). Falls back to legacy shared creds for backward compat.
@@ -547,11 +550,11 @@ _LINKEDIN_COMPANY_CREDENTIALS = {
 #   3. Else, empty placeholder
 # `_oauth_mode` is computed here, never user-set; it lives in the credentials dict
 # so the provider can branch on it without importing settings.
-_LINKEDIN_PERSONAL_CLIENT_ID = env("PLATFORM_LINKEDIN_PERSONAL_CLIENT_ID", default="")
+_LINKEDIN_PERSONAL_CLIENT_ID = env("PLATFORM_LINKEDIN_PERSONAL_CLIENT_ID", default="").strip()
 if _LINKEDIN_PERSONAL_CLIENT_ID:
     _LINKEDIN_PERSONAL_CREDENTIALS = {
         "client_id": _LINKEDIN_PERSONAL_CLIENT_ID,
-        "client_secret": env("PLATFORM_LINKEDIN_PERSONAL_CLIENT_SECRET", default=""),
+        "client_secret": env("PLATFORM_LINKEDIN_PERSONAL_CLIENT_SECRET", default="").strip(),
         "_oauth_mode": "oidc",
     }
 elif _LINKEDIN_COMPANY_CREDENTIALS["client_id"]:
@@ -583,15 +586,15 @@ PLATFORM_CREDENTIALS_FROM_ENV = {
     "linkedin_personal": _LINKEDIN_PERSONAL_CREDENTIALS,
     "linkedin_company": _LINKEDIN_COMPANY_CREDENTIALS,
     "tiktok": {
-        "client_key": env("PLATFORM_TIKTOK_CLIENT_KEY", default=""),
-        "client_secret": env("PLATFORM_TIKTOK_CLIENT_SECRET", default=""),
+        "client_key": env("PLATFORM_TIKTOK_CLIENT_KEY", default="").strip(),
+        "client_secret": env("PLATFORM_TIKTOK_CLIENT_SECRET", default="").strip(),
     },
     # Google platforms - YouTube and Google Business Profile share the same OAuth client
     "youtube": _GOOGLE_CREDENTIALS,
     "google_business": _GOOGLE_CREDENTIALS,
     "pinterest": {
-        "app_id": env("PLATFORM_PINTEREST_APP_ID", default=""),
-        "app_secret": env("PLATFORM_PINTEREST_APP_SECRET", default=""),
+        "app_id": env("PLATFORM_PINTEREST_APP_ID", default="").strip(),
+        "app_secret": env("PLATFORM_PINTEREST_APP_SECRET", default="").strip(),
     },
     # Bluesky - session-based auth (app passwords), no app-level credentials needed
     "bluesky": {},
