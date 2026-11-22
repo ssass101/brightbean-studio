@@ -3,28 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %} - Canvas Social Manager</title>
+    <title>{% block title %}{% endblock %} · Canvas Social Manager</title>
     <link rel="icon" href="{% static 'favicon/favicon.ico' %}" sizes="any">
     <link rel="icon" type="image/png" sizes="96x96" href="{% static 'favicon/favicon-96x96.png' %}">
     <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+    <style>
+        :root { --legal-blue: #2563EB; --legal-blue-deep: #1D4ED8; --legal-blue-night: #172C66; }
+        body { margin: 0; font-family: var(--brand-font-body, 'Inter', system-ui, sans-serif); background: #F8FAFC; color: #1C1917; }
+        /* Encabezado de marca en azul */
+        .legal-hero {
+            position: relative; overflow: hidden; color: #fff;
+            background:
+                radial-gradient(900px 400px at -5% -40%, rgba(96,165,250,.35), transparent 60%),
+                linear-gradient(135deg, var(--legal-blue) 0%, var(--legal-blue-deep) 60%, var(--legal-blue-night) 130%);
+            padding: 40px 24px 36px;
+        }
+        .legal-hero::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1px); background-size: 22px 22px; opacity: .5; pointer-events: none; }
+        .legal-hero-wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; }
+        .legal-brand { display: flex; align-items: center; margin-bottom: 20px; }
+        .legal-brand img { height: 40px; width: auto; max-width: 220px; object-fit: contain; }
+        .legal-hero h1 { font-family: var(--brand-font-display, 'Plus Jakarta Sans', 'Inter', sans-serif); font-size: clamp(26px, 4vw, 34px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 6px; }
+        .legal-hero p { font-size: 13px; color: rgba(255,255,255,.78); margin: 0; }
+        /* Cuerpo */
+        .legal-body { max-width: 760px; margin: -20px auto 0; padding: 0 20px 60px; position: relative; z-index: 2; }
+        .legal-card { background: #fff; border: 1px solid #E8EBF0; border-radius: 18px; box-shadow: 0 10px 40px rgba(23,44,102,.07); padding: 36px 40px; line-height: 1.7; font-size: 15px; color: #292524; }
+        .legal-card p { margin: 0 0 14px; }
+        .legal-card h2 { font-family: var(--brand-font-display, 'Plus Jakarta Sans', 'Inter', sans-serif); font-size: 17px; font-weight: 700; color: #101828; margin: 26px 0 10px; letter-spacing: -.01em; }
+        .legal-card ul { margin: 0 0 14px; padding-left: 22px; }
+        .legal-card li { margin-bottom: 6px; }
+        .legal-card a { color: var(--legal-blue); }
+        .legal-foot { max-width: 760px; margin: 22px auto 0; padding: 0 20px; text-align: center; font-size: 13px; color: #98A2B3; }
+        .legal-foot a { color: var(--legal-blue); text-decoration: none; }
+        .legal-foot a:hover { text-decoration: underline; }
+        @media (max-width: 640px) { .legal-card { padding: 26px 22px; } }
+    </style>
 </head>
 <body>
-<main class="auth-bg min-h-screen py-12 px-4" style="font-family: var(--font-body);">
-    <div class="w-full max-w-3xl mx-auto">
-        <div class="text-center mb-8">
-            <img src="{% static 'img/canvas-logo.webp' %}" alt="Canvas Digital Experiences" class="h-20 w-auto object-contain inline-block mb-4">
-            <h1 class="text-2xl font-bold tracking-tight" style="color: var(--text-primary);">{% block heading %}{% endblock %}</h1>
-            <p class="text-sm mt-1" style="color: var(--text-secondary);">Última actualización: 19 de noviembre de 2026</p>
+    <div class="legal-hero">
+        <div class="legal-hero-wrap">
+            <div class="legal-brand">
+                <img src="{% static 'img/canvas-logo.webp' %}" alt="Canvas Digital Experiences">
+            </div>
+            <h1>{% block heading %}{% endblock %}</h1>
+            <p>Última actualización: 19 de noviembre de 2026</p>
         </div>
-        <div class="auth-card" style="color: var(--text-primary); line-height: 1.7; font-size: 0.95rem;">
+    </div>
+
+    <div class="legal-body">
+        <div class="legal-card">
             {% block body %}{% endblock %}
         </div>
-        <p class="text-center text-sm mt-6" style="color: var(--text-secondary);">
-            <a href="{% url 'legal_privacy' %}" class="underline">Política de privacidad</a> ·
-            <a href="{% url 'legal_terms' %}" class="underline">Términos del servicio</a> ·
-            <a href="https://canvasde.com" class="underline">Canvas Digital Experiences</a>
-        </p>
     </div>
-</main>
+
+    <p class="legal-foot">
+        <a href="{% url 'privacy' %}">Política de privacidad</a> ·
+        <a href="{% url 'terms' %}">Términos del servicio</a> ·
+        <a href="https://canvasde.com">Canvas Digital Experiences</a>
+    </p>
 </body>
 </html>
