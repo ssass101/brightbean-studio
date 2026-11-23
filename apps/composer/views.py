@@ -843,6 +843,19 @@ def compose(request, workspace_id, post_id=None):
     # Fresh drafts get "Submit for Approval"; posts already in the workflow
     # (changes-requested / rejected / approved-but-edited) get "Resubmit" instead.
     show_submit_button = workflow_mode != "none" and not show_resubmit_button and not post_is_readonly
+
+    # El modo "required_internal_and_client" necesita AL MENOS un miembro con rol
+    # CLIENT para que el cliente pueda aprobar. Si no hay ninguno, el flujo queda
+    # roto (el post se queda esperando a nadie y no llega el mail). Avisamos en el
+    # composer con un cartel y un link directo a "Clientes del workspace".
+    needs_client_setup = False
+    if workflow_mode == "required_internal_and_client" and (show_submit_button or show_resubmit_button):
+        from apps.members.models import WorkspaceMembership
+
+        needs_client_setup = not WorkspaceMembership.objects.filter(
+            workspace=workspace,
+            workspace_role=WorkspaceMembership.WorkspaceRole.CLIENT,
+        ).exists()
     # Once the post is committed to publishing, the Schedule Post panel re-times
     # a live schedule; while still a draft it captures a *proposed* time on save.
     # Mirror _capture_proposed_publish_at's guard exactly (scheduled_at OR a
@@ -966,6 +979,7 @@ def compose(request, workspace_id, post_id=None):
         "workflow_mode": workflow_mode,
         "show_submit_button": show_submit_button,
         "show_resubmit_button": show_resubmit_button,
+        "needs_client_setup": needs_client_setup,
         "approval_history": approval_history,
         "latest_feedback": latest_feedback,
         "post_comments": post_comments,
