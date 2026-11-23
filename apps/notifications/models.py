@@ -23,6 +23,7 @@ class EventType(models.TextChoices):
     APPROVAL_STALLED = "approval_stalled", "Stalled approval escalation"
     APPROVAL_HOLD_REQUESTED = "approval_hold_requested", "Client requested a hold"
     CLIENT_CONNECTED_ACCOUNTS = "client_connected_accounts", "Client connected accounts"
+    CLIENT_PORTAL_FIRST_LOGIN = "client_portal_first_login", "Client entered the portal for the first time"
 
 
 class Channel(models.TextChoices):

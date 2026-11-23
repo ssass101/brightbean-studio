@@ -166,13 +166,52 @@ def revoke_magic_link(token_id, workspace):
 def create_portal_session(request, user, workspace):
     """Create a portal session for the client user.
 
-    Logs in the user and sets portal-specific session variables.
+    Logs in the user and sets portal-specific session variables. Si es la primera
+    vez que el cliente entra al portal (last_login todavía None), avisamos al
+    equipo del workspace (owner + admins) con una notificación — así se enteran
+    sin tener que llamar al cliente para preguntar si el magic link funcionó.
     """
+    is_first_login = user.last_login is None
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
     request.session["is_portal_session"] = True
     request.session["portal_workspace_id"] = str(workspace.id)
     # 30-day session
     request.session.set_expiry(30 * 24 * 60 * 60)
+
+    if is_first_login:
+        try:
+            _notify_team_of_first_client_login(user, workspace)
+        except Exception:
+            # Nunca romper el login por un fallo de notificación.
+            logger.exception("Could not notify team of first client login for %s", user.email)
+
+
+def _notify_team_of_first_client_login(client_user, workspace):
+    """Avisa a owner + admins del workspace que el cliente entró al portal por primera vez."""
+    from apps.members.models import WorkspaceMembership
+    from apps.notifications.engine import notify
+    from apps.notifications.models import EventType
+
+    recipients = WorkspaceMembership.objects.filter(
+        workspace=workspace,
+        workspace_role__in=[
+            WorkspaceMembership.WorkspaceRole.OWNER,
+            WorkspaceMembership.WorkspaceRole.ADMIN,
+        ],
+    ).select_related("user")
+
+    client_label = client_user.name or client_user.email
+    for membership in recipients:
+        notify(
+            user=membership.user,
+            event_type=EventType.CLIENT_PORTAL_FIRST_LOGIN,
+            title=f"{client_label} entró al portal",
+            body=f"El cliente de {workspace.name} abrió el portal por primera vez. Ya puede aprobar publicaciones.",
+            data={
+                "workspace_id": str(workspace.id),
+                "client_user_id": str(client_user.pk),
+            },
+        )
 
 
 REVIEW_LINK_DAYS = 7
