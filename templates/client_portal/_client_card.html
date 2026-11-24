@@ -23,7 +23,16 @@ already-approved posts get "Put on hold"; held posts show their state.
         </div>
 
         {% if post.caption %}
-        <p class="text-[0.9375rem] leading-relaxed text-stone-800 whitespace-pre-wrap" :class="open ? '' : 'line-clamp-3'">{{ post.caption }}</p>
+        <div>
+            <p class="text-[0.9375rem] leading-relaxed text-stone-800 whitespace-pre-wrap" :class="open ? '' : 'line-clamp-3'">{{ post.caption }}</p>
+            {# "Ver más / Ver menos" para expandir captions largas. Solo aparece
+               si realmente hay texto cortado; usamos scrollHeight vs clientHeight. #}
+            <button type="button" @click="open = !open"
+                    x-show="open || $el.previousElementSibling.scrollHeight > $el.previousElementSibling.clientHeight + 2"
+                    class="mt-1 text-[0.8125rem] font-semibold text-stone-500 hover:text-stone-800">
+                <span x-text="open ? 'Ver menos' : 'Ver más'"></span>
+            </button>
+        </div>
         {% endif %}
 
         {% with media=post.media_attachments.all %}
