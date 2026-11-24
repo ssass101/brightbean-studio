@@ -866,6 +866,18 @@ def compose(request, workspace_id, post_id=None):
         or any(pp.status in ("scheduled", "publishing", "published") for pp in platform_post_list)
     )
 
+    # ¿El cliente tenía que aprobar y la fecha ya pasó?
+    # Cuando una publicación queda en pending_client sin acción y la fecha planeada
+    # vence, el post se queda limbo. Avisamos para que vos la clones y la reenvíes
+    # sin tener que cargar todo de nuevo.
+    client_overdue = False
+    if post is not None:
+        has_pending_client = any(pp.status == "pending_client" for pp in platform_post_list)
+        if has_pending_client:
+            planned = post.scheduled_at or post.proposed_publish_at
+            if planned and planned < timezone.now():
+                client_overdue = True
+
     # Approval history and comments for existing posts
     approval_history = []
     post_comments = []
@@ -980,6 +992,7 @@ def compose(request, workspace_id, post_id=None):
         "show_submit_button": show_submit_button,
         "show_resubmit_button": show_resubmit_button,
         "needs_client_setup": needs_client_setup,
+        "client_overdue": client_overdue,
         "approval_history": approval_history,
         "latest_feedback": latest_feedback,
         "post_comments": post_comments,

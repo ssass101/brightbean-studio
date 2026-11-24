@@ -513,6 +513,28 @@
                 </div>
                 {% endif %}
 
+                {% if client_overdue %}
+                <!-- Pendiente de cliente + la fecha ya pasó: avisamos y damos "Clonar" a mano
+                     para reenviar a aprobar sin cargar todo de nuevo. -->
+                <div class="border border-amber-200 bg-amber-50 rounded-xl p-3 flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-2 min-w-0">
+                        <svg class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p class="text-xs text-amber-800 leading-relaxed">
+                            El cliente no respondió y <span class="font-semibold">la fecha planeada ya pasó</span>.
+                            Clonala para corregir la fecha y volver a enviarla sin cargar todo de nuevo.
+                            La original queda tal cual, con su historial.
+                        </p>
+                    </div>
+                    <button type="button"
+                            class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white hover:opacity-90 flex-shrink-0 cursor-pointer"
+                            style="background: var(--primary, #2563EB);"
+                            hx-post="{% url 'composer:clone_post' workspace_id=workspace.id post_id=post.id %}"
+                            title="Crear una copia editable como borrador">
+                        Clonar
+                    </button>
+                </div>
+                {% endif %}
+
                 {% if post and post.status == 'scheduled' %}
                 <!-- Scheduled: editable, but warn that edits affect a live schedule -->
                 <div class="border border-amber-200 bg-amber-50 rounded-xl p-3 flex items-start gap-2">
