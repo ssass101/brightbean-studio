@@ -49,9 +49,10 @@
         background: white;
     }
     @media (min-width: 768px) {
-        /* Taller than the old 130px: the month cards carry a 4:5 thumbnail now.
-           The cell still grows past this when a day holds two. */
-        .cal-day { min-height: 285px; padding: 8px; }
+        /* Deliberately short: a week with no posts should not reserve card
+           height. The grid row stretches to fit whichever day holds cards, so
+           a busy week grows on its own and an empty one stays out of the way. */
+        .cal-day { min-height: 112px; padding: 8px; }
     }
     .cal-day:hover { background: #FAFAF9; }
     .cal-day.past { background: #F5F5F4; }
@@ -130,9 +131,16 @@
 
     .cal-card-media {
         position: relative;
-        /* 4:5, the native portrait ratio for social. A 16:10 crop cut the top
-           and bottom off a Reel and left you guessing what the piece was. */
-        width: 100%; aspect-ratio: 4 / 5;
+        /* 4:5, the native portrait ratio for social: a 16:10 crop cut the top
+           and bottom off a Reel. Capped by HEIGHT and centred rather than
+           stretched to the cell's width — at full width the card grew tall
+           enough to swallow the month. The side gutters are the trade. */
+        aspect-ratio: 4 / 5;
+        max-height: 112px;
+        width: auto; max-width: 100%;
+        margin: 0 auto;
+        border-radius: 4px;
+        overflow: hidden;
         background: #F5F5F4;
     }
     .cal-card-media img,
