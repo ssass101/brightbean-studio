@@ -504,6 +504,16 @@ class PlatformPost(models.Model):
     retry_count = models.PositiveIntegerField(default=0)
     next_retry_at = models.DateTimeField(blank=True, null=True)
 
+    # Set True por ``clone_post`` cuando la PlatformPost original ya había pasado
+    # aprobación (status en ``APPROVED/SCHEDULED/PUBLISHING/PUBLISHED/FAILED``).
+    # El gate de aprobación en ``services._require_approval_gate_passes`` deja
+    # pasar directo a ``scheduled`` cuando todas las PlatformPost del post lo
+    # tienen True, para que un Reel aprobado y publicado pueda republicarse como
+    # Historia (misma cuenta, mismo workspace) sin re-aprobación. Cambiar la
+    # cuenta destino en el composer reemplaza la PlatformPost y el flag se
+    # pierde solo; editar caption/media NO lo invalida (decisión de producto).
+    inherits_approval = models.BooleanField(default=False, db_default=False)
+
     # Analytics sync state — the read-side counterpart to the retry budget
     # above, owned solely by ``apps.analytics.tasks``.
     #

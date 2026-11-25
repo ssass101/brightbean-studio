@@ -261,7 +261,7 @@ def transition_platform_post(
     # MCP transition tool, the composer's HTMX `transition_platform_post`
     # view) is covered.
     if target_status == "scheduled":
-        _require_approval_gate_passes(platform_post.post.workspace)
+        _require_approval_gate_passes(platform_post.post.workspace, post=platform_post.post)
         require_publishable(platform_post)
 
     with transaction.atomic():
@@ -327,12 +327,21 @@ def clone_post(post, *, author=None):
         )
         children = list(post.platform_posts.all())
         if children:
+            # Statuses that indicate the original PlatformPost already cleared
+            # the approval gate (team + client, if required). When the clone
+            # keeps the same social_account, there's no new content to review
+            # from the client's standpoint — republishing a Reel as a Historia
+            # from the same account shouldn't force another approval round.
+            # The flag is per-child so swapping the destination account in the
+            # composer deletes this row and the replacement starts without it.
+            _APPROVED_STATUSES = {"approved", "scheduled", "publishing", "published", "failed"}
             PlatformPost.objects.bulk_create(
                 [
                     PlatformPost(
                         post=new_post,
                         social_account=pp.social_account,
                         status="draft",
+                        inherits_approval=pp.status in _APPROVED_STATUSES,
                         platform_specific_title=pp.platform_specific_title,
                         platform_specific_caption=pp.platform_specific_caption,
                         platform_specific_first_comment=pp.platform_specific_first_comment,
@@ -375,18 +384,30 @@ def clone_post(post, *, author=None):
 _APPROVAL_MODES_BLOCKING_DIRECT_SCHEDULE = frozenset({"required_internal", "required_internal_and_client"})
 
 
-def _require_approval_gate_passes(workspace) -> None:
+def _require_approval_gate_passes(workspace, *, post=None) -> None:
     """Raise ``ValueError`` if the workspace forbids direct scheduling.
 
     Drafts are always allowed (they're explicit save-for-later);
     scheduling implies "ready to publish," which is exactly what the
     approval workflow gates.
+
+    ``post`` lets the gate detect a clone of an already-approved post: when
+    every one of its ``PlatformPost`` rows was born with ``inherits_approval``
+    (set by :func:`clone_post` from an original whose status had cleared the
+    gate), scheduling is allowed without a new approval round. Swapping the
+    destination account in the composer replaces the row and drops the flag,
+    so a change-of-account clone still goes through the normal workflow.
     """
-    if getattr(workspace, "approval_workflow_mode", "none") in _APPROVAL_MODES_BLOCKING_DIRECT_SCHEDULE:
-        raise ValueError(
-            "Workspace requires approval before scheduling; create the post as a "
-            "draft and route it through the approval workflow."
-        )
+    if getattr(workspace, "approval_workflow_mode", "none") not in _APPROVAL_MODES_BLOCKING_DIRECT_SCHEDULE:
+        return
+    if post is not None:
+        children = list(post.platform_posts.all())
+        if children and all(getattr(pp, "inherits_approval", False) for pp in children):
+            return
+    raise ValueError(
+        "Workspace requires approval before scheduling; create the post as a "
+        "draft and route it through the approval workflow."
+    )
 
 
 def usable_media_types(assets) -> set[str]:

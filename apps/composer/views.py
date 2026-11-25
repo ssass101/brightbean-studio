@@ -469,8 +469,14 @@ def _approval_gate_rejection(request, workspace, post_id, action):
     """
     if action not in _DIRECT_SCHEDULE_ACTIONS:
         return None
+    # When editing an existing post (typical clone-then-schedule path), pass it
+    # so the gate can detect a clone of an already-approved piece and let it
+    # through without re-approval.
+    post_for_gate = None
+    if post_id:
+        post_for_gate = Post.objects.filter(pk=post_id, workspace=workspace).first()
     try:
-        _require_approval_gate_passes(workspace)
+        _require_approval_gate_passes(workspace, post=post_for_gate)
     except ValueError as exc:
         message = str(exc)
     else:
@@ -1566,7 +1572,7 @@ def transition_platform_post(request, workspace_id, post_id, platform_post_id):
         # has passed the gate already.
         if pp.status == "draft":
             try:
-                _require_approval_gate_passes(workspace)
+                _require_approval_gate_passes(workspace, post=pp.post)
             except ValueError as exc:
                 return JsonResponse({"error": str(exc)}, status=400)
         # save_post's own checks never see this endpoint: it moves one row

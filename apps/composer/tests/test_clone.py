@@ -60,6 +60,10 @@ class ClonePostServiceTest(TestCase):
         self.assertEqual(child.social_account, self.account)
         self.assertEqual(child.platform_specific_caption, "tiktok caption")
         self.assertEqual(child.platform_extra, {"privacy_level": "SELF_ONLY", "disable_duet": True})
+        # Source had cleared approval (PUBLISHED) so the clone carries the flag
+        # that lets _require_approval_gate_passes bypass the workflow when the
+        # workspace demands client approval.
+        self.assertTrue(child.inherits_approval)
 
         # Mutating the clone's extras must not bleed into the source (deepcopy).
         child.platform_extra["privacy_level"] = "PUBLIC"
