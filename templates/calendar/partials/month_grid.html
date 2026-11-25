@@ -54,29 +54,92 @@ Enhanced with: holidays, custom events, category colors, recurring badges.
             </div>
             {% endfor %}
 
-            {% for pp in day.posts %}
-            <a href="{% url 'composer:compose_edit' workspace_id=workspace.id post_id=pp.post_id %}?account={{ pp.social_account_id }}"
-               class="post-chip status-{{ pp.status }}{% if pp.is_reschedulable %} is-draggable{% endif %}"
-               title="{% if pp.is_reschedulable %}Move or open{% else %}Open{% endif %}"
-               {% if pp.is_reschedulable %}draggable="true" data-platform-post-id="{{ pp.id }}"{% else %}draggable="false"{% endif %}>
-                {% if pp.is_bulk_selectable %}{% include "calendar/partials/_select_checkbox.html" with pp_id=pp.id %}{% endif %}
-                <span class="w-4 h-4 rounded flex items-center justify-center pi-{{ pp.social_account.platform }} flex-shrink-0 text-white">
-                    {% include "social_accounts/partials/_platform_icon.html" with platform=pp.social_account.platform size="3" %}
-                </span>
-                {% with first_media=pp.post.media_attachments.all.0 %}
-                {% if first_media and first_media.media_asset.thumbnail %}
-                <img src="{{ first_media.media_asset.thumbnail.url }}" alt="" class="w-5 h-5 rounded object-cover flex-shrink-0">
-                {% elif first_media and not first_media.media_asset.is_video %}
-                <img src="{{ first_media.media_asset.file.url }}" alt="" class="w-5 h-5 rounded object-cover flex-shrink-0">
-                {% elif first_media and first_media.media_asset.is_video %}
-                <video src="{{ first_media.media_asset.file.url }}#t=0.5" class="w-5 h-5 rounded object-cover flex-shrink-0" muted preload="metadata"></video>
-                {% endif %}
-                {% endwith %}
-                <span class="truncate">{{ pp.post.title|default:pp.post.caption_snippet|truncatechars:28 }}</span>
-                {% if pp.post.recurrence_rule %}
-                <svg class="w-3 h-3 text-current opacity-50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                {% endif %}
-            </a>
+            {% for card in day.posts %}
+            {% comment %}
+            One card per piece, not per destination account: the same post
+            cross-published to IG + FB + YouTube used to take three identical
+            one-line chips and bury the content. The platform icons move into
+            the header row and the space goes to the thumbnail instead.
+            The wrapper is a plain div so the Duplicar button can sit outside
+            the <a> and not trigger the navigation.
+            {% endcomment %}
+            {% comment %}Sortable moves the cell's direct children, so the wrapper — not the inner <a> — carries is-draggable and the ids.{% endcomment %}
+            <div class="cal-card-wrap{% if card.is_reschedulable %} is-draggable{% endif %}"
+                 {% if card.is_reschedulable %}draggable="true" data-platform-post-ids="{{ card.pp_ids }}"{% endif %}>
+                <a href="{% url 'composer:compose_edit' workspace_id=workspace.id post_id=card.post_id %}{% if card.account_id %}?account={{ card.account_id }}{% endif %}"
+                   {% comment %}cs-* rather than status-*: the global .status-<x> rules paint a whole one-line chip's background, which on a card would swamp the thumbnail.{% endcomment %}
+                   class="cal-card cs-{{ card.status }}{% if card.has_failure %} has-failure{% endif %}"
+                   title="{{ card.post.title|default:card.post.caption_snippet }} — {{ card.account_label }}"
+                   draggable="false">
+
+                    {# Header: platform icons + time #}
+                    <div class="cal-card-head">
+                        {% if card.select_id %}{% include "calendar/partials/_select_checkbox.html" with pp_id=card.select_id %}{% endif %}
+                        <span class="cal-card-icons">
+                            {% for acc in card.accounts %}
+                            <span class="cal-card-icon pi-{{ acc.platform }}" title="{{ acc.account_name|default:acc.account_handle }}">
+                                {% if acc.platform == "youtube" %}
+                                {% comment %}_platform_icon renders YouTube as a text label, which overflows a 15px square.{% endcomment %}
+                                <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
+                                {% else %}
+                                {% include "social_accounts/partials/_platform_icon.html" with platform=acc.platform size="3" %}
+                                {% endif %}
+                            </span>
+                            {% endfor %}
+                        </span>
+                        {% if card.effective_at %}
+                        <span class="cal-card-time">{{ card.effective_at|time:"H:i" }}</span>
+                        {% endif %}
+                    </div>
+
+                    {# Thumbnail #}
+                    {% with first_media=card.first_media %}
+                    {% if first_media %}
+                    <div class="cal-card-media">
+                        {% if first_media.media_asset.thumbnail %}
+                        <img src="{{ first_media.media_asset.thumbnail.url }}" alt="" loading="lazy">
+                        {% elif first_media.media_asset.is_video %}
+                        <video src="{{ first_media.media_asset.file.url }}#t=0.5" muted preload="metadata"></video>
+                        <span class="cal-card-play">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+                        </span>
+                        {% else %}
+                        <img src="{{ first_media.media_asset.file.url }}" alt="" loading="lazy">
+                        {% endif %}
+                        {% if card.media_count > 1 %}
+                        <span class="cal-card-count">+{{ card.media_count|add:"-1" }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    {# Caption #}
+                    <p class="cal-card-text">{{ card.post.title|default:card.post.caption_snippet|default:"(sin texto)" }}</p>
+
+                    {# Footer: failure alert / recurring badge #}
+                    {% if card.has_failure or card.post.recurrence_rule %}
+                    <div class="cal-card-foot">
+                        {% if card.has_failure %}
+                        <span class="cal-card-alert">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                            {% if card.failure_count == 1 %}1 falló{% else %}{{ card.failure_count }} fallaron{% endif %}
+                        </span>
+                        {% endif %}
+                        {% if card.post.recurrence_rule %}
+                        <svg class="cal-card-repeat" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </a>
+
+                {# Duplicar — fuera del <a> para que el click no abra el post #}
+                <form method="post" action="{% url 'composer:clone_post' workspace_id=workspace.id post_id=card.post_id %}" class="cal-card-dup">
+                    {% csrf_token %}
+                    <button type="submit" title="Duplicar — crea un borrador editable con el mismo contenido. Útil para republicar como Historia o cambiar de formato.">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    </button>
+                </form>
+            </div>
             {% endfor %}
 
             {% if day.overflow > 0 %}

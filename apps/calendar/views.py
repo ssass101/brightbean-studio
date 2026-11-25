@@ -911,6 +911,146 @@ def _render_calendar_partial(request, workspace, view_type, target_date, context
     return _month_view(request, workspace, target_date, context)
 
 
+# Which status wins when one piece goes out to several accounts and they are
+# not all in the same state. Ordered by how much attention the card deserves:
+# a failure anywhere is an alert (Sergio: "si algo falló, sea 1 de 3 o 3 de 3,
+# es una alerta para revisar"), and otherwise the least-advanced state wins so
+# "2 publicadas + 1 programada" still reads as not-finished.
+_GROUP_STATUS_PRIORITY = [
+    "failed",
+    "rejected",
+    "changes_requested",
+    "on_hold",
+    "pending_client",
+    "pending_review",
+    "draft",
+    "approved",
+    "scheduled",
+    "publishing",
+    "published",
+]
+
+
+class CalendarCard:
+    """One calendar card standing for a whole Post on a given day.
+
+    The month grid used to render one chip per ``PlatformPost``, so a piece
+    cross-published to Instagram, Facebook and YouTube took three identical
+    rows and buried the actual content. This collapses them: one card per
+    piece, carrying every platform it goes to, so the thumbnail and caption
+    get the space instead.
+    """
+
+    def __init__(self, platform_posts):
+        # Stable order: platform name, so the icon row doesn't reshuffle
+        # between renders of the same card.
+        self.platform_posts = sorted(platform_posts, key=lambda pp: pp.social_account.platform)
+        self.first = self.platform_posts[0]
+        self.post = self.first.post
+
+    # -- identity / links -------------------------------------------------
+    @property
+    def post_id(self):
+        return self.post.id
+
+    @property
+    def account_id(self):
+        """Account to preselect when opening the composer.
+
+        Only meaningful for a single-account card; a multi-account one opens
+        with the composer's own default so every destination stays visible.
+        """
+        return self.first.social_account_id if len(self.platform_posts) == 1 else ""
+
+    @property
+    def pp_ids(self):
+        """Comma-separated PlatformPost ids, for drag & drop."""
+        return ",".join(str(pp.id) for pp in self.platform_posts)
+
+    # -- presentation -----------------------------------------------------
+    @property
+    def status(self):
+        present = {pp.status for pp in self.platform_posts}
+        for candidate in _GROUP_STATUS_PRIORITY:
+            if candidate in present:
+                return candidate
+        return self.first.status
+
+    @property
+    def has_failure(self):
+        return any(pp.status == "failed" for pp in self.platform_posts)
+
+    @property
+    def failure_count(self):
+        return sum(1 for pp in self.platform_posts if pp.status == "failed")
+
+    @property
+    def status_display(self):
+        return self.first.get_status_display() if len(self.platform_posts) == 1 else dict(
+            PlatformPost.Status.choices
+        ).get(self.status, self.status)
+
+    @property
+    def accounts(self):
+        """The social accounts this piece goes out to, for the icon row."""
+        return [pp.social_account for pp in self.platform_posts]
+
+    @property
+    def account_label(self):
+        """Account name for a single-destination card, else how many."""
+        if len(self.platform_posts) == 1:
+            acc = self.first.social_account
+            return acc.account_name or acc.account_handle or acc.platform
+        return f"{len(self.platform_posts)} cuentas"
+
+    @property
+    def effective_at(self):
+        return self.first.effective_at
+
+    @property
+    def first_media(self):
+        attachments = list(self.post.media_attachments.all())
+        return attachments[0] if attachments else None
+
+    @property
+    def media_count(self):
+        return len(self.post.media_attachments.all())
+
+    # -- affordances ------------------------------------------------------
+    @property
+    def is_reschedulable(self):
+        """Draggable only when every destination can move.
+
+        A card whose Instagram row already published must not drag the whole
+        piece to another day — the published one can't follow.
+        """
+        return all(pp.is_reschedulable for pp in self.platform_posts)
+
+    @property
+    def is_bulk_selectable(self):
+        return all(pp.is_bulk_selectable for pp in self.platform_posts)
+
+    @property
+    def select_id(self):
+        """Checkbox value — only offered on single-account cards.
+
+        Bulk actions operate per PlatformPost; a grouped card would need the
+        bar to take a list, which is a separate change.
+        """
+        return self.first.id if len(self.platform_posts) == 1 else ""
+
+
+def _group_cards_by_post(platform_posts):
+    """Collapse ``platform_posts`` into one :class:`CalendarCard` per Post."""
+    by_post = defaultdict(list)
+    for pp in platform_posts:
+        by_post[pp.post_id].append(pp)
+    cards = [CalendarCard(pps) for pps in by_post.values()]
+    # Timed cards first, in time order; undated ones trail behind.
+    cards.sort(key=lambda c: (c.effective_at is None, c.effective_at))
+    return cards
+
+
 def _month_view_data(request, workspace, target_date, context):
     """Populate context with month view data (no rendering)."""
     import zoneinfo
@@ -945,11 +1085,13 @@ def _month_view_data(request, workspace, target_date, context):
         .order_by("-updated_at")[:10]
     )
 
-    # Group PlatformPosts by date in the display timezone
-    posts_by_date = defaultdict(list)
+    # Group PlatformPosts by date in the display timezone, then collapse each
+    # day's rows into one card per Post (see CalendarCard).
+    raw_by_date = defaultdict(list)
     for pp in platform_posts:
         if pp.effective_at:
-            posts_by_date[pp.effective_at.astimezone(display_tz).date()].append(pp)
+            raw_by_date[pp.effective_at.astimezone(display_tz).date()].append(pp)
+    posts_by_date = {day_: _group_cards_by_post(pps) for day_, pps in raw_by_date.items()}
 
     # Holiday overlay
     holidays_by_date = {}
@@ -980,9 +1122,11 @@ def _month_view_data(request, workspace, target_date, context):
                     "is_current_month": day.month == month,
                     "is_today": day == today,
                     "is_past": day < today,
-                    "posts": day_posts[:3],
+                    # Two cards per day now that each one carries a thumbnail;
+                    # three of the old one-line chips fit, three cards don't.
+                    "posts": day_posts[:2],
                     "total_posts": len(day_posts),
-                    "overflow": max(0, len(day_posts) - 3),
+                    "overflow": max(0, len(day_posts) - 2),
                     "holidays": day_holidays,
                     "events": day_events,
                 }

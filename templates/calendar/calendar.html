@@ -49,7 +49,9 @@
         background: white;
     }
     @media (min-width: 768px) {
-        .cal-day { min-height: 130px; padding: 8px; }
+        /* Taller than the old 130px: the month cards carry a thumbnail now.
+           The cell still grows past this when a day holds two. */
+        .cal-day { min-height: 165px; padding: 8px; }
     }
     .cal-day:hover { background: #FAFAF9; }
     .cal-day.past { background: #F5F5F4; }
@@ -79,6 +81,135 @@
     }
     .post-chip:hover { transform: translateX(1px); }
     .post-chip .chip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ------------------------------------------------------------------
+       Month-view card — one per piece, not per destination account.
+       The old one-line chip repeated the same post once per network and
+       left no room for the thumbnail, which is what actually tells you
+       what a slot holds at a glance.
+       ------------------------------------------------------------------ */
+    .cal-card-wrap { position: relative; margin-bottom: 4px; }
+    .cal-card {
+        display: block; text-decoration: none;
+        border-radius: 8px; overflow: hidden;
+        background: white;
+        border: 1px solid #E7E5E4;
+        transition: box-shadow 150ms ease, transform 150ms ease;
+    }
+    .cal-card:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
+    }
+    .cal-card-wrap.is-draggable { cursor: grab; }
+    .cal-card-wrap.is-draggable:active { cursor: grabbing; }
+
+    .cal-card-head {
+        display: flex; align-items: center; gap: 4px;
+        padding: 4px 6px;
+        font-size: 10px; font-weight: 600;
+    }
+    .cal-card-icons { display: inline-flex; align-items: center; }
+    /* Stacked, Buffer-style: a 3-network piece reads as one unit. */
+    .cal-card-icon {
+        width: 15px; height: 15px; border-radius: 4px;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: white; flex-shrink: 0;
+        box-shadow: 0 0 0 1.5px white;
+        overflow: hidden;
+    }
+    .cal-card-icon svg { width: 10px; height: 10px; }
+    /* .pi-youtube elsewhere turns the badge into a transparent text label
+       (the shared icon partial renders "YouTube" as words). The card draws a
+       real glyph, so take the square back. */
+    .cal-card-icon.pi-youtube {
+        background: #FF0000 !important;
+        width: 15px !important; min-width: 0; color: white;
+    }
+    .cal-card-icon + .cal-card-icon { margin-left: -4px; }
+    .cal-card-time { margin-left: auto; opacity: 0.75; font-variant-numeric: tabular-nums; }
+
+    .cal-card-media {
+        position: relative;
+        width: 100%; aspect-ratio: 16 / 10;
+        background: #F5F5F4;
+    }
+    .cal-card-media img,
+    .cal-card-media video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cal-card-play {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        pointer-events: none;
+    }
+    .cal-card-play svg {
+        width: 16px; height: 16px; color: white;
+        filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+    }
+    .cal-card-count {
+        position: absolute; right: 3px; bottom: 3px;
+        background: rgba(0,0,0,0.6); color: white;
+        font-size: 9px; font-weight: 700;
+        padding: 0 3px; border-radius: 3px;
+    }
+
+    .cal-card-text {
+        margin: 4px 6px 5px;
+        font-size: 10px; line-height: 1.3; font-weight: 500;
+        color: #44403C;
+        /* Two lines, then ellipsis. max-height backs the clamp up: without it
+           a third line still painted past the card's bottom edge. */
+        display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+        -webkit-box-orient: vertical;
+        max-height: 2.6em;
+        overflow: hidden;
+    }
+
+    .cal-card-foot {
+        display: flex; align-items: center; gap: 4px;
+        padding: 0 6px 5px;
+    }
+    .cal-card-alert {
+        display: inline-flex; align-items: center; gap: 3px;
+        font-size: 9px; font-weight: 700;
+        color: #B91C1C;
+    }
+    .cal-card-alert svg { width: 10px; height: 10px; }
+    .cal-card-repeat { width: 10px; height: 10px; opacity: 0.45; margin-left: auto; }
+
+    /* Duplicar — only on hover so the card stays clean. Sits over the
+       thumbnail rather than the header, where it covered the time. */
+    .cal-card-dup {
+        position: absolute; top: 26px; right: 5px;
+        opacity: 0; transition: opacity 120ms ease;
+    }
+    .cal-card-wrap:hover .cal-card-dup,
+    .cal-card-dup:focus-within { opacity: 1; }
+    .cal-card-dup button {
+        width: 20px; height: 20px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(255,255,255,0.95);
+        border: 1px solid #D6D3D1;
+        color: #57534E; cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        transition: all 120ms ease;
+    }
+    .cal-card-dup button:hover { background: white; color: #1C1917; border-color: #A8A29E; }
+    .cal-card-dup svg { width: 11px; height: 11px; }
+
+    /* Card status accents — the left edge carries the editorial state so the
+       thumbnail keeps its own colors. A failure anywhere wins (Sergio: "si
+       algo falló, sea 1 de 3 o 3 de 3, es una alerta para revisar"). */
+    .cal-card.cs-draft              { border-left: 3px solid #A8A29E; }
+    .cal-card.cs-pending_review,
+    .cal-card.cs-pending_client     { border-left: 3px solid #F59E0B; }
+    .cal-card.cs-approved,
+    .cal-card.cs-scheduled          { border-left: 3px solid #2563EB; }
+    .cal-card.cs-publishing         { border-left: 3px solid #6366F1; }
+    .cal-card.cs-published          { border-left: 3px solid #22C55E; }
+    .cal-card.cs-changes_requested  { border-left: 3px solid #EAB308; }
+    .cal-card.cs-rejected           { border-left: 3px solid #EF4444; }
+    .cal-card.cs-on_hold            { border-left: 3px solid #7C3AED; }
+    .cal-card.cs-failed,
+    .cal-card.has-failure           { border-left: 3px solid #EF4444; background: #FEF2F2; }
 
     /* Status colors */
     .status-draft      { background: #F5F5F4; color: #57534E; border: 1px solid #E7E5E4; }
@@ -324,6 +455,7 @@
         opacity: 0; transition: opacity 120ms ease, background 120ms ease;
     }
     .post-chip:hover .cal-select-box,
+    .cal-card-wrap:hover .cal-select-box,
     .cal-select-box.is-checked,
     body.has-selection .cal-select-box { opacity: 1; }
     .cal-select-box.is-checked { background: #2563EB; border-color: #2563EB; }
@@ -512,7 +644,7 @@ function calendarApp() {
             // navigate to the editor. Swallow that click while a drag is in
             // flight; genuine clicks (no drag) still open the post.
             document.body.addEventListener('click', (e) => {
-                if (this._draggingChip && e.target.closest('.post-chip.is-draggable')) {
+                if (this._draggingChip && e.target.closest('.post-chip.is-draggable, .cal-card-wrap.is-draggable')) {
                     e.preventDefault();
                     e.stopPropagation();
                 }
@@ -535,7 +667,9 @@ function calendarApp() {
                 if (Sortable.get(cell)) return; // already wired this cell
                 this._sortables.push(Sortable.create(cell, {
                     group: 'calendar',
-                    draggable: '.post-chip.is-draggable',
+                    // Month view drags the grouped card wrapper; week/day views
+                    // still drag the one-line per-account chip.
+                    draggable: '.post-chip.is-draggable, .cal-card-wrap.is-draggable',
                     animation: 150,
                     ghostClass: 'chip-ghost',
                     // Native HTML5 drag: the browser renders a drag image that
@@ -567,25 +701,34 @@ function calendarApp() {
                         document.querySelectorAll('.cal-drop.cal-drop-active').forEach(c => c.classList.remove('cal-drop-active'));
                         setTimeout(() => { this._draggingChip = false; }, 60);
                         if (evt.to === evt.from) return; // dropped back in place
-                        const ppId = evt.item.getAttribute('data-platform-post-id');
+                        // A month card stands for the whole piece, so it carries
+                        // every destination's id and they all move together.
+                        const ids = (
+                            evt.item.getAttribute('data-platform-post-ids') ||
+                            evt.item.getAttribute('data-platform-post-id') ||
+                            ''
+                        ).split(',').filter(Boolean);
                         const date = evt.to.getAttribute('data-date');
                         const time = evt.to.getAttribute('data-time') || '09:00';
-                        if (!ppId || !date) return;
-                        this.rescheduleChip(ppId, date + 'T' + time + ':00');
+                        if (!ids.length || !date) return;
+                        this.rescheduleChip(ids, date + 'T' + time + ':00');
                     },
                 }));
             });
         },
 
-        rescheduleChip(platformPostId, newDatetime) {
+        rescheduleChip(platformPostIds, newDatetime) {
             // newDatetime is the target cell's workspace-tz wall date/time (see
             // _cell_compose_params); reschedule_post interprets the naive value
             // in the workspace timezone, so the drop lands on the right instant.
+            // A month card moves every destination of the piece, so this takes a
+            // list and fires one request per row against the same endpoint.
+            const ids = Array.isArray(platformPostIds) ? platformPostIds : [platformPostIds];
             const csrfToken =
                 (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value ||
                 (document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/) || [])[1] ||
                 '';
-            fetch('{% url "calendar:reschedule" workspace_id=workspace.id %}', {
+            const post = (id) => fetch('{% url "calendar:reschedule" workspace_id=workspace.id %}', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken,
@@ -593,25 +736,28 @@ function calendarApp() {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: new URLSearchParams({
-                    platform_post_id: platformPostId,
+                    platform_post_id: id,
                     new_datetime: newDatetime,
                 }),
-            }).then((res) => {
-                if (!res.ok) {
-                    // Snap the grid back to the server truth, and say why — a
-                    // drop rejected by the publish gate would otherwise look
-                    // like the chip just sprang back for no reason.
-                    this.reloadCalendar();
-                    bbFailureToast(res, 'Could not reschedule that post.');
-                    return;
-                }
-                // Re-render on success too. SortableJS drops the chip at the
-                // cursor's index, so the target cell is left out of time order
-                // and — in month view, which renders only the first three posts
-                // plus a "+N more" count — one chip over the cap it was
-                // rendered with. It's a partial swap of #calendar-content, not
-                // a page load.
+            });
+            // Sequential, not parallel: each one writes Post.scheduled_at via
+            // sync_post_scheduled_at, and concurrent writes to the same row
+            // would race.
+            ids.reduce(
+                (chain, id) => chain.then((firstBad) => post(id).then((res) => firstBad || (res.ok ? null : res))),
+                Promise.resolve(null),
+            ).then((failed) => {
+                // Re-render either way. SortableJS drops the card at the cursor's
+                // index, so the target cell is left out of time order and — in
+                // month view, which renders only the first two cards plus a
+                // "+N more" count — one over the cap it was rendered with. It's
+                // a partial swap of #calendar-content, not a page load.
                 this.reloadCalendar();
+                if (failed) {
+                    // Say why — a drop rejected by the publish gate would
+                    // otherwise look like the card just sprang back for no reason.
+                    bbFailureToast(failed, 'No se pudo reprogramar esa publicación.');
+                }
             }).catch(() => this.reloadCalendar());
         }
     };
