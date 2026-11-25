@@ -49,9 +49,9 @@
         background: white;
     }
     @media (min-width: 768px) {
-        /* Taller than the old 130px: the month cards carry a thumbnail now.
+        /* Taller than the old 130px: the month cards carry a 4:5 thumbnail now.
            The cell still grows past this when a day holds two. */
-        .cal-day { min-height: 165px; padding: 8px; }
+        .cal-day { min-height: 285px; padding: 8px; }
     }
     .cal-day:hover { background: #FAFAF9; }
     .cal-day.past { background: #F5F5F4; }
@@ -130,7 +130,9 @@
 
     .cal-card-media {
         position: relative;
-        width: 100%; aspect-ratio: 16 / 10;
+        /* 4:5, the native portrait ratio for social. A 16:10 crop cut the top
+           and bottom off a Reel and left you guessing what the piece was. */
+        width: 100%; aspect-ratio: 4 / 5;
         background: #F5F5F4;
     }
     .cal-card-media img,
