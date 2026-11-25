@@ -179,18 +179,29 @@ def submit_for_review(target, user, workspace):
     return post
 
 
-def approve_post(target, user, workspace, comment=""):
+def approve_post(target, user, workspace, comment="", *, from_client=False):
     """Approve a post or single platform post.
 
     If the workspace runs the two-stage internal+client flow and we're moving
     out of ``pending_review``, the target hops to ``approved`` and then to
     ``pending_client`` (the same behaviour as before, just per-target).
-    """
-    post, targets, is_bundled = _resolve_targets(
-        target, eligible_from_states={"pending_review", "pending_client", "draft", "rejected", "changes_requested"}
-    )
 
-    two_stage = workspace.approval_workflow_mode == "required_internal_and_client"
+    ``from_client=True`` is the portal path: the client OK covers the whole
+    piece, so every sibling that hasn't shipped yet (draft, pending_review,
+    changes_requested, rejected, on_hold, pending_client) lands on
+    ``approved`` in one shot, and the two-stage client hop is skipped — the
+    client has already spoken.
+    """
+    if from_client:
+        # Only states that can transition straight to ``approved``
+        # (VALID_TRANSITIONS). draft/changes_requested/rejected cannot, so
+        # include them would just yield skipped rows.
+        eligible = {"pending_review", "pending_client", "on_hold"}
+    else:
+        eligible = {"pending_review", "pending_client", "draft", "rejected", "changes_requested"}
+    post, targets, is_bundled = _resolve_targets(target, eligible_from_states=eligible)
+
+    two_stage = workspace.approval_workflow_mode == "required_internal_and_client" and not from_client
     moved = []
     advanced_to_client = False
     with transaction.atomic():

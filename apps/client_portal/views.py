@@ -194,7 +194,12 @@ def portal_approve(request, post_id):
     comment_text = request.POST.get("comment", "")
 
     try:
-        approval_services.approve_post(post, request.user, workspace, comment_text)
+        # from_client=True: la aprobación del cliente cubre TODA la pieza, no
+        # solo los PlatformPost que ya pasaron por aprobación interna. Si el
+        # cliente dice OK a un Reel pensado para IG + FB + TikTok, los tres
+        # quedan aprobados aunque el equipo solo hubiera firmado IG. "Las
+        # publicaciones son iguales" — la firma del cliente es sobre la pieza.
+        approval_services.approve_post(post, request.user, workspace, comment_text, from_client=True)
     except ValueError as e:
         return _portal_error(request, str(e))
 
