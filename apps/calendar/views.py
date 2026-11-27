@@ -2,6 +2,7 @@
 
 import calendar as cal_mod
 import json
+import logging
 import uuid
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
@@ -19,9 +20,12 @@ from apps.members.decorators import can_edit_post, membership_permissions, requi
 from apps.members.models import WorkspaceMembership
 from apps.social_accounts.models import SocialAccount
 from apps.workspaces.models import Workspace
+from providers.types import PostType
 
 from .holidays import get_holidays_for_range
 from .models import CustomCalendarEvent, PostingSlot, Queue, QueueEntry
+
+logger = logging.getLogger(__name__)
 
 # Common timezones for the publish page timezone dropdown
 COMMON_TIMEZONES = [
@@ -931,6 +935,22 @@ _GROUP_STATUS_PRIORITY = [
 ]
 
 
+# Letter + tooltip for the format badge on a calendar card, so you can tell a
+# Reel from a Historia without opening the post. Keyed by PostType; a type
+# missing here (LINK, ARTICLE, POLL) simply gets no badge rather than a
+# meaningless letter.
+_POST_TYPE_BADGES = {
+    PostType.REEL: ("R", "Reel"),
+    PostType.STORY: ("H", "Historia"),
+    PostType.CAROUSEL: ("C", "Carrusel"),
+    PostType.IMAGE: ("P", "Post"),
+    PostType.VIDEO: ("V", "Video"),
+    PostType.SHORT: ("S", "Short"),
+    PostType.TEXT: ("T", "Solo texto"),
+    PostType.PIN: ("Pin", "Pin"),
+}
+
+
 class CalendarCard:
     """One calendar card standing for a whole Post on a given day.
 
@@ -1015,6 +1035,43 @@ class CalendarCard:
     @property
     def media_count(self):
         return len(self.post.media_attachments.all())
+
+    @property
+    def post_type(self):
+        """What this piece will actually publish as, as a :class:`PostType`.
+
+        Delegates to the publish engine's own resolver rather than reading
+        ``platform_extra["post_type"]`` directly, so the badge agrees with what
+        the publisher will do: the stored hint goes stale when media is added
+        or removed afterwards, and several types are never written down at all
+        (a lone video on Instagram becomes a Reel, two images become a
+        Carousel). Taken from the first destination — a video is a Reel on
+        Instagram and a plain Video on Facebook, and one letter can only say
+        one of those.
+        """
+        from apps.publisher.engine import PublishEngine
+
+        attachments = list(self.post.media_attachments.all())
+        first_media_type = attachments[0].media_asset.media_type if attachments else None
+        try:
+            return PublishEngine._resolve_post_type(
+                self.first.social_account.platform,
+                self.first.platform_extra or {},
+                len(attachments),
+                first_media_type,
+            )
+        except Exception:
+            # The badge is a convenience; never let it take the calendar down.
+            logger.exception("Could not resolve post type for post %s", self.post.id)
+            return None
+
+    @property
+    def type_letter(self):
+        return _POST_TYPE_BADGES.get(self.post_type, ("", ""))[0]
+
+    @property
+    def type_label(self):
+        return _POST_TYPE_BADGES.get(self.post_type, ("", ""))[1]
 
     # -- affordances ------------------------------------------------------
     @property

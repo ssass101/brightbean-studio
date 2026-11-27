@@ -73,9 +73,10 @@ Enhanced with: holidays, custom events, category colors, recurring badges.
                    draggable="false">
 
                     {% comment %}Thumbnail on the left, everything else beside it: stacking the caption under the image cost two extra rows of height per card and pushed the month off screen.{% endcomment %}
+                    {% comment %}The media box renders even with nothing in it: a text-only post still needs its slot so the card keeps one height, and the format badge has somewhere to sit.{% endcomment %}
                     {% with first_media=card.first_media %}
-                    {% if first_media %}
-                    <div class="cal-card-media">
+                    <div class="cal-card-media{% if not first_media %} is-empty{% endif %}">
+                        {% if first_media %}
                         {% if first_media.media_asset.thumbnail %}
                         <img src="{{ first_media.media_asset.thumbnail.url }}" alt="" loading="lazy">
                         {% elif first_media.media_asset.is_video %}
@@ -89,8 +90,12 @@ Enhanced with: holidays, custom events, category colors, recurring badges.
                         {% if card.media_count > 1 %}
                         <span class="cal-card-count">+{{ card.media_count|add:"-1" }}</span>
                         {% endif %}
+                        {% endif %}
+                        {% if card.type_letter %}
+                        {% comment %}Format badge (R/H/C/P/V/S/T) so a Reel reads apart from a Historia without opening the post.{% endcomment %}
+                        <span class="cal-card-type" title="{{ card.type_label }}">{{ card.type_letter }}</span>
+                        {% endif %}
                     </div>
-                    {% endif %}
                     {% endwith %}
 
                     <div class="cal-card-body">

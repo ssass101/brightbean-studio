@@ -162,6 +162,33 @@
         font-size: 9px; font-weight: 700;
         padding: 0 3px; border-radius: 3px;
     }
+    .cal-card-media.is-empty {
+        display: flex; align-items: center; justify-content: center;
+        border: 1px dashed #D6D3D1;
+    }
+
+    /* Format badge: R(eel), H(istoria), C(arrusel), P(ost), V(ideo),
+       S(hort), T(exto). Top-left of the thumbnail, big enough to read at a
+       glance across a month without opening anything. */
+    .cal-card-type {
+        position: absolute; left: 3px; top: 3px;
+        min-width: 15px; height: 15px;
+        display: flex; align-items: center; justify-content: center;
+        padding: 0 3px;
+        background: rgba(0,0,0,0.62); color: white;
+        font-size: 11px; font-weight: 800; line-height: 1;
+        border-radius: 4px;
+        /* The thumbnail underneath can be any colour, so the glyph gets its
+           own outline rather than relying on the panel's contrast. */
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    /* Nothing to sit on in an empty box, so it becomes the box's content. */
+    .cal-card-media.is-empty .cal-card-type {
+        position: static;
+        background: #E7E5E4; color: #57534E;
+        font-size: 15px; min-width: 0; height: auto;
+        padding: 3px 6px; text-shadow: none;
+    }
 
     .cal-card-text {
         margin: 0;
@@ -187,10 +214,11 @@
     .cal-card-alert svg { width: 10px; height: 10px; }
     .cal-card-repeat { width: 10px; height: 10px; opacity: 0.45; margin-left: auto; }
 
-    /* Duplicar — only on hover so the card stays clean. Over the thumbnail's
-       top-left: anywhere in the text column it covered a line of the caption. */
+    /* Duplicar — only on hover so the card stays clean. Bottom-left of the
+       thumbnail: the text column covered a caption line, the top-left is the
+       format badge's and the bottom-right the "+N images" count's. */
     .cal-card-dup {
-        position: absolute; top: 8px; left: 8px;
+        position: absolute; left: 8px; bottom: 9px;
         opacity: 0; transition: opacity 120ms ease;
     }
     .cal-card-wrap:hover .cal-card-dup,
